@@ -1,0 +1,19 @@
+{
+    "files": [],
+    "references": [
+        { "path": "./.nuxt/tsconfig.app.json" },
+        { "path": "./.nuxt/tsconfig.server.json" },
+        { "path": "./.nuxt/tsconfig.shared.json" },
+        { "path": "./.nuxt/tsconfig.node.json" }
+    ],
+    "compilerOptions": {
+        "ignoreDeprecations": "6.0",
+        "baseUrl": ".",
+        "skipLibCheck": true,
+        "paths": {
+            "@/*": ["./*"]
+        },
+        "noEmit": true
+    },
+    "exclude": ["node_modules", "node_modules/pusher-js"]
+}

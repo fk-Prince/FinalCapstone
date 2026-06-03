@@ -1,0 +1,30 @@
+{
+    "name": "client",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "make:service": "node scripts/make-service.js"
+    },
+    "dependencies": {
+        "@heroicons/vue": "^2.2.0",
+        "@pinia/nuxt": "^0.11.3",
+        "laravel-echo": "^2.3.4",
+        "leaflet": "^1.9.4",
+        "nuxt": "^4.4.4",
+        "nuxt-auth-utils": "0.5.29",
+        "pinia": "^3.0.4",
+        "pinia-plugin-persistedstate": "^4.7.1",
+        "pusher-js": "^8.5.0",
+        "vue": "^3.5.33",
+        "vue-router": "^5.0.6"
+    },
+    "devDependencies": {
+        "@nuxtjs/tailwindcss": "^6.14.0",
+        "prettier": "^3.8.3"
+    }
+}

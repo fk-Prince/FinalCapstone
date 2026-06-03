@@ -1,0 +1,18 @@
+{
+    "name": "capstone",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "artisan": "cd server && php artisan serve",
+        "client": "pnpm --prefix client run dev",
+        "dev": "concurrently \"npm run artisan\" \"npm run client\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.28.2",
+    "devDependencies": {
+        "concurrently": "^10.0.0"
+    }
+}

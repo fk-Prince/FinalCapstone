@@ -1,0 +1,243 @@
+<?php
+
+namespace App\Service;
+
+use App\Enums\BillingIntervalEnum;
+use App\Repository\BranchRepository;
+use App\Repository\SubscriptionRepository;
+use App\Repository\PlanRepository;
+use Carbon\Carbon;
+use App\Factories\PaymentFactory;
+use App\Repository\AgencyRepository;
+use App\Repository\LocationRepository;
+use App\Repository\RoleRepository;
+use App\Repository\UserRepository;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+class SubscriptionService
+{
+    private SubscriptionRepository $subscriptionRepository;
+    private PlanRepository $planRepository;
+    private BranchRepository $branchRepository;
+    private AgencyRepository $agencyRepository;
+    private RoleRepository $roleRepository;
+    private UserRepository $userRepository;
+    private LocationRepository $locationRepository;
+    private string $secretKey;
+
+    public function __construct(
+        SubscriptionRepository $subscriptionRepository,
+        PlanRepository $planRepository,
+        BranchRepository $branchRepository,
+        AgencyRepository $agencyRepository,
+        RoleRepository $roleRepository,
+        UserRepository $userRepository,
+        LocationRepository $locationRepository
+    ) {
+        $this->subscriptionRepository = $subscriptionRepository;
+        $this->planRepository = $planRepository;
+        $this->branchRepository = $branchRepository;
+        $this->agencyRepository = $agencyRepository;
+        $this->roleRepository = $roleRepository;
+        $this->userRepository = $userRepository;
+        $this->locationRepository =  $locationRepository;
+        $this->secretKey = env('XENDIT_SECRET_KEY');
+    }
+
+
+    public function makeSubscription(array $payload)
+    {
+        $paymentMethod = PaymentFactory::make($payload['payment_method']);
+        $subscription = $this->createSubscription($payload);
+        return $paymentMethod->subscriptionInvoice($payload, $subscription);
+    }
+
+    public function createSubscription(array $payload)
+    {
+        $user = Auth::user();
+        $plan_code = $payload['plan_code'];
+        $billing_interval = BillingIntervalEnum::tryFrom(
+            $payload['billing_interval']
+        );
+
+        if (!$billing_interval) {
+            throw new \Exception(__('Invalid billing interval.'));
+        }
+
+        $plan = $this->planRepository->findByField('plan_code', $plan_code);
+
+        if (!$plan) {
+            throw new \Exception(__('Plan not found.'));
+        }
+
+        $plan->load($billing_interval->loadPriceKey());
+        $price = $billing_interval->loadPriceKey();
+        $priceModel = $plan->{$price};
+        $totalAmount = (float) data_get($priceModel, 'price', 0);
+
+        $endDate = $billing_interval->addTo(Carbon::now())->toDateTimeString();
+        return [
+            'user' => $user,
+            'plan' => $plan,
+            'branch' => [
+                'name'           => $payload['branch_name'] ?? null,
+                'street'         => $payload['branch_street'] ?? null,
+                'postal_code'    => $payload['branch_postal_code'] ?? null,
+                'city'           => $payload['branch_city'] ?? null,
+                'province'       => $payload['branch_province'] ?? null,
+                'country'        => $payload['branch_country'] ?? null,
+                'contact_number' => $payload['branch_contact_number'] ?? null,
+                'image'          => $payload['branch_image'] ?? null,
+            ],
+            'agency' => [
+                'id'             => $payload['agency_id'] ?? null,
+                'name'           => $payload['agency_name'] ?? null,
+                'description'    => $payload['agency_description'] ?? null,
+                'street'         => $payload['agency_street'] ?? null,
+                'postal_code'    => $payload['agency_postal_code'] ?? null,
+                'city'           => $payload['agency_city'] ?? null,
+                'province'       => $payload['agency_province'] ?? null,
+                'country'        => $payload['agency_country'] ?? null,
+            ],
+            'method' => $payload['payment_method'],
+            'billing_interval' => $billing_interval,
+            'total_amount' => $totalAmount,
+            'endDate' => $endDate,
+            'type' => 'subscription',
+            'status' => true
+        ];
+    }
+
+    public function newSubscriber(array $payload)
+    {
+        return DB::transaction(function () use ($payload) {
+            $meta = $payload['metadata'];
+            $plan =  $meta['plan'];
+            $billing_interval = $meta['billing_interval'];
+            $user = $meta['user'];
+            $agency = $meta['agency'];
+            $endDate = $meta['endDate'];
+            $branch = $meta['branch'];
+
+            $reference_id = $payload['external_id'];
+            $xendit_invoice_id = $payload['xendit_invoice_id'];
+
+
+            $agencyData = $this->agencyRepository->findAgencyByField('agency_id', $agency['id']);
+
+            if (!$agencyData) {
+                $agencyLocation = $this->locationRepository->create([
+                    $agency['street'] ?? null,
+                    $agency['postal_code'] ?? null,
+                    $agency['city'] ?? null,
+                    $agency['province'] ?? null,
+                    $agency['country'] ?? null,
+                ]);
+                $agencyData = $this->agencyRepository->createAgency([
+                    $agency['name'] ?? null,
+                    $agency['description'] ?? null,
+                    $agencyLocation->location_id ?? null,
+                ]);
+            }
+
+            $branchLocation = $this->locationRepository->create([
+                $branch['street'] ?? null,
+                $branch['postal_code'] ?? null,
+                $branch['city'] ?? null,
+                $branch['province'] ?? null,
+                $branch['country'] ?? null,
+            ]);
+
+            $branch = $this->branchRepository->create([
+                'owner_user_id' => $user['user_id'],
+                'agency_id' =>   $agencyData->agency_id ?? null,
+                'location_id' => $branchLocation->location_id,
+                'name' => $branch['name'] ?? null,
+                'contact_number' => $branch['contact_number'] ?? null,
+                'image' => $branch['image'] ?? null,
+            ]);
+
+            if (!$plan['plan_code']) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Invalid Plan Type')
+                ], 422);
+                // throw new \Exception('Invalid plan type',422);
+            }
+
+            $subscription = $this->subscriptionRepository->create([
+                'plan_id' => $plan['plan_id'],
+                'branch_id' => $branch['branch_id'],
+                'billing_interval' => $billing_interval,
+                'status' => 'active',
+                'start_date' => Carbon::now(),
+                'end_date' => $endDate
+            ]);
+
+            $priceKey = BillingIntervalEnum::from($billing_interval)->loadPrice();
+            $priceModel = data_get($plan, $priceKey);
+
+            $subscription->subscription_payments()->create([
+                'subscription_id' => $subscription->subscription_id,
+                'xendit_invoice_id' => $xendit_invoice_id,
+                'payment_reference_id' => $reference_id,
+                'price_id' => $priceModel['price_id'],
+            ]);
+
+
+            $role = $this->roleRepository->findByUuid('role_type', 'branch_owner');
+            $user = $this->userRepository->findByField('user_id', $user['user_id']);
+            $user->roles()->attach($role->role_id, [
+                'is_active' => true
+            ]);
+
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Subscription created successfully.')
+            ], 201);
+        });
+    }
+
+    public function subscriptionWebhook(object $payload)
+    {
+        if (
+            isset($payload['status'], $payload['external_id']) &&
+            ($payload['status'] === 'PAID' || $payload['status'] === 'CAPTURED')
+        ) {
+
+            $invoice = Http::withBasicAuth($this->secretKey, '')
+                ->get("https://api.xendit.co/v2/invoices/{$payload['id']}")
+                ->json();
+
+            $metadata = $invoice['metadata'] ?? [];
+            $type = $metadata['type'] ?? null;
+
+            if (! $type) {
+                return response()->json([
+                    'message' => __('Missing metadata type')
+                ], 422);
+            }
+
+            if (Str::lower($type) === 'subscription') {
+                return $this->newSubscriber([
+                    'xendit_invoice_id' => $payload->id,
+                    'external_id' => $payload->external_id,
+                    'metadata' => $metadata
+                ]);
+            }
+
+            if (Str::lower($type) === 'renewal') {
+                // return $this->renewSubscription([
+                //     'xendit_invoice_id' => $payload->id,
+                //     'external_id' => $payload->external_id,
+                //     'metadata' => $metadata
+                // ]);
+            }
+        }
+    }
+}
