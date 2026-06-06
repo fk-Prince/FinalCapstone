@@ -1,16 +1,17 @@
 export const colors = {
-    primary: '#634514', // bg-primary , text-primary etc.
-    secondary: '#your-color',
-    accent: '#your-color',
+    primary: '#3182ED',
+    secondary: '#111827',
+    accent: '#22C55E',
+    light: '#ebf2ff',
     muted: {
-        DEFAULT: '#your-color', // usage sample bg-muted-default
-        light: '#your-light-color',
-        dark: '#your-dark-color',
+        DEFAULT: '#6b7280',
+        light: '#f3f4f6',
+        dark: '#374151',
     },
 }
 
 export const fontFamily = {
-    sans: ['Your Font', 'sans-serif'], // SAMPLE FONTS
+    sans: ['DM Sans', 'sans-serif'],
 }
 
 export const borderRadius = {

@@ -87,6 +87,7 @@ class SubscriptionService
                 'name'           => $payload['branch_name'] ?? null,
                 'street'         => $payload['branch_street'] ?? null,
                 'postal_code'    => $payload['branch_postal_code'] ?? null,
+                'description'    => $payload['branch_description'] ?? null,
                 'city'           => $payload['branch_city'] ?? null,
                 'province'       => $payload['branch_province'] ?? null,
                 'country'        => $payload['branch_country'] ?? null,
@@ -127,35 +128,44 @@ class SubscriptionService
             $xendit_invoice_id = $payload['xendit_invoice_id'];
 
 
-            $agencyData = $this->agencyRepository->findAgencyByField('agency_id', $agency['id']);
 
-            if (!$agencyData) {
+            $agencyData = null;
+            $agencyId = $agency['id'] ?? null;
+            $agencyName = $agency['name'] ?? null;
+
+            if (!empty($agencyId)) {
+                $agencyData = $this->agencyRepository->findAgencyByField('agency_id', $agencyId);
+            }
+
+            if (empty($agencyData) && !empty($agencyName)) {
                 $agencyLocation = $this->locationRepository->create([
-                    $agency['street'] ?? null,
-                    $agency['postal_code'] ?? null,
-                    $agency['city'] ?? null,
-                    $agency['province'] ?? null,
-                    $agency['country'] ?? null,
+                    'street' => $agency['street'] ?? null,
+                    'city' => $agency['city'] ?? null,
+                    'province' => $agency['province'] ?? null,
+                    'country' => $agency['country'] ?? null,
                 ]);
+
                 $agencyData = $this->agencyRepository->createAgency([
-                    $agency['name'] ?? null,
-                    $agency['description'] ?? null,
-                    $agencyLocation->location_id ?? null,
+                    'name' => $agencyName,
+                    'description' => $agency['description'] ?? null,
+                    'location_id' => $agencyLocation->location_id ?? null,
                 ]);
             }
 
+
             $branchLocation = $this->locationRepository->create([
-                $branch['street'] ?? null,
-                $branch['postal_code'] ?? null,
-                $branch['city'] ?? null,
-                $branch['province'] ?? null,
-                $branch['country'] ?? null,
+                'street' => $branch['street'] ?? null,
+                'city' => $branch['city'] ?? null,
+                'province' => $branch['province'] ?? null,
+                'country' => $branch['country'] ?? null,
             ]);
+
 
             $branch = $this->branchRepository->create([
                 'owner_user_id' => $user['user_id'],
                 'agency_id' =>   $agencyData->agency_id ?? null,
                 'location_id' => $branchLocation->location_id,
+                'description' => $branch['description'] ?? null,
                 'name' => $branch['name'] ?? null,
                 'contact_number' => $branch['contact_number'] ?? null,
                 'image' => $branch['image'] ?? null,

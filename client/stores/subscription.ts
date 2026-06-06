@@ -1,27 +1,15 @@
 import { defineStore } from "pinia";
-
-export const branchFields = [
-    { key: "name", label: "Branch Name" },
-    { key: "contact_number", label: "Contact Number" },
-    { key: "street", label: "Street" },
-    { key: "city", label: "City" },
-    { key: "province", label: "Province" },
-    { key: "postal_code", label: "Postal Code" },
-    { key: "country", label: "Country" },
-];
-
-export const agencyFields = [
-    { key: "name", label: "Agency Name" },
-    { key: "description", label: "Description" },
-];
+import { type SubscriptionRequest } from '~/api/subscription/SubscriptionService';
 
 export interface Subscription {
     plans: any[];
     selectedPlan: any;
-    selectedInterval: "monthly" | "yearly";
+    selectedInterval: "" | "monthly" | "yearly";
     payment_method: string;
     branch: Branch;
     agency: Agency;
+    errors?: any;
+    subscriptionPayload?: SubscriptionRequest | null;
 }
 
 export const useSubscriptionCheckout = defineStore(
@@ -30,28 +18,32 @@ export const useSubscriptionCheckout = defineStore(
         state: (): Subscription => ({
             plans: [] as any[],
             selectedPlan: null as any,
-            selectedInterval: "monthly" as "monthly" | "yearly",
+            selectedInterval: "monthly",
             payment_method: "CREDIT-CARD",
             branch: {
-                name: "Obrero Main Branch",
-                contact_number: "+63 917 123 4567",
+                name: "AMUMA",
+                contact_number: "09771171913",
                 image: null as File | null,
-                street: "Palma Gil Street",
-                postal_code: "8000",
+                street: "Roxas Avenue",
+                description: "Homecare Facility",
                 city: "Davao City",
                 province: "Davao del Sur",
-                country: "Philippines",
+                country: "PH",
             } as Branch,
             agency: {
+                id: "" as string | null,
                 name: "",
                 description: "",
                 street: "",
-                postal_code: "",
                 city: "",
                 province: "",
                 country: "",
             } as Agency,
+
+            errors: {},
+            subscriptionPayload: null as SubscriptionRequest | null,
         }),
+
 
         getters: {
             selectedPrice: (state) => {
@@ -71,13 +63,24 @@ export const useSubscriptionCheckout = defineStore(
                 }
             },
 
+            setErrors(errors: Record<string, string>) {
+                this.errors = errors;
+            },
+
+            clearError(field: string) {
+                delete this.errors[field];
+            },
+
+            clearAllErrors() {
+                this.errors = {};
+            },
+
             reset() {
                 this.selectedPlan = null;
                 this.selectedInterval = "monthly";
                 this.payment_method = "CREDIT-CARD";
             },
-        },
 
-        persist: true,
+        },
     }
 );

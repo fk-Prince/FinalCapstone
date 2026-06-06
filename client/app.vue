@@ -1,23 +1,22 @@
 <template>
     <div>
-        <NuxtLayout>
+        <!-- <UApp> -->
+        <NuxtLayout class="font-sans m-0 p-0">
             <NuxtPage />
         </NuxtLayout>
-        <!-- <ClientOnly v-if="!ready">
-            <template #fallback>
-                <div class="h-screen flex items-center justify-center">
-                    Loading...
-                </div>
-            </template>
-
-            <div class="h-screen flex items-center justify-center">
-                Loading...
-            </div>
-        </ClientOnly>
-        <div v-else>
-            <NuxtLayout>
-                <NuxtPage />
-            </NuxtLayout>
-        </div> -->
+        <!-- </UApp> -->
+        <AppToast ref="toastRef" />
     </div>
 </template>
+
+<script setup lang="ts">
+import AppToast from "./components/ui/AppToast.vue";
+import { onMounted, ref } from "vue";
+import { registerToast } from "@/composables/useToast";
+
+const toastRef = ref();
+
+onMounted(() => {
+    registerToast(toastRef.value);
+});
+</script>

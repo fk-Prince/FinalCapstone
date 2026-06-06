@@ -8,6 +8,5 @@
 
 <script setup lang="ts">
 const route = useRoute();
-
 const status = computed(() => route.query.status || "unknown");
 </script>

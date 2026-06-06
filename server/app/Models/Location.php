@@ -13,7 +13,6 @@ class Location extends Model
 
     protected $fillable = [
         'street',
-        'postal_code',
         'city',
         'province',
         'country',

@@ -15,31 +15,29 @@ export interface CardDetails {
 
 
 
-export async function cardPayment(card: CardDetails, checkout: any, closeModal: any) {
+export async function cardPayment(card: CardDetails, checkout: any, closeModal: any, subData: SubscriptionRequest) {
     let data;
     const config = useRuntimeConfig();
     window.Xendit.setPublishableKey(config.public.xenditPublicKey);
 
-    const subData: SubscriptionRequest = {
-        plan_code: checkout.selectedPlan.plan_code,
-        payment_method: checkout.payment_method,
-        billing_interval: checkout.selectedInterval,
-        //BRANCH DATA
-        branch_name: checkout.branch.name,
-        branch_postal_code: checkout.branch.postal_code,
-        branch_street: checkout.branch.street,
-        branch_city: checkout.branch.city,
-        branch_province: checkout.branch.province,
-        branch_country: checkout.branch.country,
-        branch_contact_number: checkout.branch.contact_number,
-        branch_image: checkout.branch.image,
+    // const subData: SubscriptionRequest = {
+    //     plan_code: checkout.selectedPlan.plan_code,
+    //     payment_method: checkout.payment_method,
+    //     billing_interval: checkout.selectedInterval,
+    //     //BRANCH DATA
+    //     branch_name: checkout.branch.name,
+    //     branch_postal_code: checkout.branch.postal_code,
+    //     branch_street: checkout.branch.street,
+    //     branch_city: checkout.branch.city,
+    //     branch_province: checkout.branch.province,
+    //     branch_country: checkout.branch.country,
+    //     branch_contact_number: checkout.branch.contact_number,
+    //     branch_image: checkout.branch.image,
 
-        // AGENCY DATA
-        agency_name: checkout.agency.name,
-        agency_description: checkout.agency.description,
-    };
-
-
+    //     // AGENCY DATA
+    //     agency_name: checkout.agency.name,
+    //     agency_description: checkout.agency.description,
+    // };
 
 
 
@@ -156,7 +154,6 @@ export async function gcashPayment(checkout: any, closeModal: any) {
             billing_interval: checkout.selectedInterval,
             //BRANCH DATA
             branch_name: checkout.branch.name,
-            branch_postal_code: checkout.branch.postal_code,
             branch_street: checkout.branch.street,
             branch_city: checkout.branch.city,
             branch_province: checkout.branch.province,

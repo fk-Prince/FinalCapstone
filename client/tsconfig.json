@@ -13,7 +13,9 @@
         "paths": {
             "@/*": ["./*"]
         },
-        "noEmit": true
+        "noEmit": true,
+        "resolveJsonModule": true
     },
+
     "exclude": ["node_modules", "node_modules/pusher-js"]
 }

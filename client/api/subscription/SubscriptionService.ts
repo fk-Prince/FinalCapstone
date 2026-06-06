@@ -9,8 +9,8 @@ export interface SubscriptionRequest {
 
     //BRANCH DATA
     branch_name: string,
-    branch_postal_code: string,
     branch_street: string,
+    branch_description?: string,
     branch_city: string,
     branch_province: string,
     branch_country: string,
@@ -21,7 +21,6 @@ export interface SubscriptionRequest {
     agency_id?: number,
     agency_name?: string,
     agency_description?: string,
-    agency_postal_code?: string,
     agency_street?: string,
     agency_city?: string,
     agency_province?: string,
@@ -48,7 +47,7 @@ class SubscriptionService extends BaseService {
     }
 
     async validateSubscription(payload: SubscriptionRequest) {
-        return await this.request(this.resource + '-validate', 'GET', payload);
+        return await this.request(this.resource + '-validate', 'POST', payload);
     }
 
     private get resource(): string {

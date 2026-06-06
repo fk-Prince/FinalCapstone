@@ -9,4 +9,6 @@ export const resetAuth = () => {
 
     user.value = null
     ready.value = false
+
+    localStorage.removeItem("auth");
 }

@@ -1,0 +1,175 @@
+<template>
+    <div class="bg-white rounded-2xl shadow-sm border p-6">
+        <h2 class="text-lg font-bold mb-4">Summary</h2>
+
+        <div class="mb-5">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-2">
+                Subscription
+            </p>
+
+            <div class="space-y-2 text-sm ml-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Plan</span>
+                    <span class="font-semibold">
+                        {{ checkout.selectedPlan?.name || "—" }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Billing</span>
+                    <span class="font-semibold capitalize">
+                        {{ checkout.selectedInterval || "—" }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Price</span>
+                    <span class="font-bold text-blue-600">
+                        {{
+                            checkout.selectedPrice != null
+                                ? `₱${checkout.selectedPrice}`
+                                : "—"
+                        }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-5 border-t pt-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-2">
+                Branch
+            </p>
+
+            <div class="space-y-2 text-sm ml-3">
+                <div
+                    v-for="field in branchFields"
+                    :key="field.key"
+                    class="flex justify-between gap-3"
+                >
+                    <span class="text-gray-500">
+                        {{ field.label }}
+                    </span>
+
+                    <span
+                        class="font-semibold text-right max-w-[200px] truncate"
+                    >
+                        {{
+                            checkout.branch[
+                                field.key as keyof typeof checkout.branch
+                            ] || "—"
+                        }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGENCY -->
+        <div class="mb-5 border-t pt-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-2">
+                Agency
+            </p>
+
+            <div class="space-y-2 text-sm ml-3">
+                <div
+                    v-for="field in agencyFields"
+                    :key="field.key"
+                    class="flex justify-between gap-3"
+                >
+                    <span class="text-gray-500">
+                        {{ field.label }}
+                    </span>
+
+                    <span
+                        class="font-semibold text-right max-w-[200px] truncate"
+                    >
+                        {{
+                            checkout.agency[
+                                field.key as keyof typeof checkout.agency
+                            ] || "—"
+                        }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BRANCH -->
+        <div class="border-t pt-4 flex justify-between items-center">
+            <span class="font-bold">Total</span>
+
+            <span class="text-xl font-bold text-blue-600">
+                {{
+                    checkout.selectedPrice != null
+                        ? `₱${checkout.selectedPrice}`
+                        : "—"
+                }}
+            </span>
+        </div>
+
+        <button
+            @click="send"
+            class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+        >
+            Confirm & Pay
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { useSubscriptionCheckout } from "~/stores/subscription";
+import { branchFields } from "~/stores/branch";
+import { agencyFields } from "~/stores/agency";
+import {
+    subscriptionService,
+    type SubscriptionRequest,
+} from "~/api/subscription/SubscriptionService";
+
+const checkout = useSubscriptionCheckout();
+
+const send = async () => {
+    try {
+        const payload: SubscriptionRequest = {
+            plan_code: checkout.selectedPlan.plan_code,
+            billing_interval: checkout.selectedInterval,
+            payment_method: checkout.payment_method,
+
+            // BRANCH
+            branch_name: checkout.branch.name,
+            branch_street: checkout.branch.street,
+            branch_description: checkout.branch.description,
+            branch_city: checkout.branch.city,
+            branch_province: checkout.branch.province,
+            branch_country: checkout.branch.country,
+            branch_contact_number: checkout.branch.contact_number,
+            branch_image: checkout.branch.image,
+
+            // AGENCY
+            agency_name: checkout.agency.name,
+            agency_description: checkout.agency.description,
+            agency_street: checkout.agency.street,
+            agency_city: checkout.agency.city,
+            agency_province: checkout.agency.province,
+            agency_country: checkout.agency.country,
+        };
+        await subscriptionService.validateSubscription(payload);
+        checkout.subscriptionPayload = payload;
+        await navigateTo({
+            path: "/subscription/checkout/payment",
+            query: {
+                code: checkout.selectedPlan?.plan_id,
+                interval: checkout.selectedInterval,
+            },
+        });
+    } catch (err: any) {
+        console.log(err);
+        const errors = err?.errors || err?.response?.data?.errors;
+        if (errors) {
+            checkout.errors = Object.fromEntries(
+                Object.entries(errors).map(([key, value]: any) => [
+                    key,
+                    Array.isArray(value) ? value[0] : value,
+                ]),
+            );
+        }
+    }
+};
+</script>

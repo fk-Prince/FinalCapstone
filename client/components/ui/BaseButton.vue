@@ -1,39 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-defineOptions({
-    name: "BaseButton",
-});
+defineOptions({ name: "BaseButton" });
 
 const props = defineProps({
     type: {
         type: String as () => "button" | "submit" | "reset",
         default: "button",
     },
-    variant: {
-        type: String,
-        default: "primary",
-    },
-    size: {
-        type: String,
-        default: "md",
-    },
-    loading: {
-        type: Boolean,
-        default: false,
-    },
-    disabled: {
-        type: Boolean,
-        default: false,
-    },
-    full: {
-        type: Boolean,
-        default: false,
-    },
-    buttonClass: {
-        type: String,
-        default: "",
-    },
+    variant: { type: String, default: "primary" },
+    size: { type: String, default: "md" },
+    loading: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    full: { type: Boolean, default: false },
+    buttonClass: { type: String, default: "" },
 });
 
 const baseClass =
@@ -42,7 +22,7 @@ const baseClass =
 const variantClass = computed(() => {
     switch (props.variant) {
         case "secondary":
-            return "bg-gray-200 text-gray-800 hover:bg-gray-300";
+            return "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200";
         case "danger":
             return "bg-red-600 text-white hover:bg-red-700";
         default:
@@ -55,7 +35,7 @@ const sizeClass = computed(() => {
         case "sm":
             return "py-2 px-3 text-sm";
         case "lg":
-            return "py-4 px-6 text-lg";
+            return "py-3.5 px-6 text-base";
         default:
             return "py-3 px-4 text-base";
     }

@@ -1,10 +1,17 @@
 export interface Agency {
-    id: string;
+    id?: string;
     name: string;
     description: string;
     street: string;
-    postal_code: string;
     city: string;
     province: string;
     country: string;
 }
+export const agencyFields: Array<{ key: string; label: string; type: string }> = [
+    { key: "name", label: "Agency Name", type: "text" },
+    { key: "description", label: "Description", type: "text" },
+    { key: "country", label: "Country", type: "text" },
+    { key: "province", label: "Province", type: "text" },
+    { key: "city", label: "City", type: "text" },
+    { key: "street", label: "Street", type: "text" },
+];

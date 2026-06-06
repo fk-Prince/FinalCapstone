@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSubscriptionCheckout } from "~/stores/subscription";
 import visaIcon from "@/assets/icons/visa.png";
-import LabelInput from "../ui/LabelInput.vue";
+import LabelInput from "../ui/BaseInput.vue";
 import { type CardDetails } from "~/composables/useSubscriptionPayment";
 
 const checkout = useSubscriptionCheckout();

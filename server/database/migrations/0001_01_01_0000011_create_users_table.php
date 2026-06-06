@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('provider')->default('local');
             $table->string('phone_number');
             $table->boolean('is_active')->default(true);
-            $table->binary('profile_picture')->nullable(true);
+            $table->binary('avatar')->nullable(true);
             $table->timestamps();
         });
 

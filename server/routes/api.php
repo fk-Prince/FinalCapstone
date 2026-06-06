@@ -23,7 +23,7 @@ Route::apiResources([
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscription', [SubscriptionController::class, 'newSubscription']);
     Route::get('/subscription-detail', [SubscriptionController::class, 'retrieveSubscriptionDetail']);
-    Route::get('/subscription-validate', [SubscriptionController::class, 'validateSubscription']);
+    Route::post('/subscription-validate', [SubscriptionController::class, 'validateSubscription']);
 
 
 

@@ -5,11 +5,7 @@ import {
     cardPayment,
     gcashPayment,
 } from "~/composables/useSubscriptionPayment";
-import {
-    useSubscriptionCheckout,
-    branchFields,
-    agencyFields,
-} from "~/stores/subscription";
+import { useSubscriptionCheckout } from "~/stores/subscription";
 
 definePageMeta({
     middleware: ["auth-client", "subscription-guard"],
@@ -31,7 +27,13 @@ const card = reactive({
 
 const payCard = async () => {
     try {
-        const res = await cardPayment(card, checkout, closeModal);
+        if (!checkout.subscriptionPayload) return;
+        const res = await cardPayment(
+            card,
+            checkout,
+            closeModal,
+            checkout.subscriptionPayload,
+        );
         alert(res);
     } catch (err) {
         console.error("Payment error:", err);

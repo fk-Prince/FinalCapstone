@@ -26,7 +26,7 @@
 </template>
 <script setup>
 import { ref, computed } from "vue";
-import BaseInput from "@/components/ui/LabelInput";
+import BaseInput from "@/components/ui/BaseInput.vue";
 
 const props = defineProps({
     title: String,
