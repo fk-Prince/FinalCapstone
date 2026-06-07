@@ -3,7 +3,14 @@
         <h2 class="text-lg font-bold mb-4">Summary</h2>
 
         <div class="mb-5">
-            <p class="text-xs text-gray-400 uppercase font-semibold mb-2">
+            <p
+                class="text-xs text-gray-400 uppercase font-semibold mb-2 flex items-center gap-2"
+            >
+                <img
+                    src="/assets/logo/logo.png"
+                    alt="Preview"
+                    class="h-[30px] object-cover rounded-sm"
+                />
                 Subscription
             </p>
 
@@ -36,29 +43,70 @@
         </div>
 
         <div class="mb-5 border-t pt-4">
-            <p class="text-xs text-gray-400 uppercase font-semibold mb-2">
+            <p
+                class="text-xs text-gray-400 uppercase font-semibold mb-2 flex gap-2 items-center"
+            >
+                <img
+                    v-if="branchImagePreview"
+                    :src="branchImagePreview"
+                    alt="Preview"
+                    class="h-[30px] object-cover rounded-sm"
+                />
                 Branch
             </p>
 
             <div class="space-y-2 text-sm ml-3">
-                <div
-                    v-for="field in branchFields"
-                    :key="field.key"
-                    class="flex justify-between gap-3"
-                >
-                    <span class="text-gray-500">
-                        {{ field.label }}
-                    </span>
-
-                    <span
-                        class="font-semibold text-right max-w-[200px] truncate"
+                <div class="space-y-2 text-sm">
+                    <div
+                        v-for="field in branchFields"
+                        :key="field.key"
+                        class="flex justify-between gap-3"
                     >
-                        {{
-                            checkout.branch[
-                                field.key as keyof typeof checkout.branch
-                            ] || "—"
-                        }}
-                    </span>
+                        <span class="text-gray-500">{{ field.label }}</span>
+
+                        <span
+                            class="font-semibold text-right max-w-[200px]"
+                            :class="
+                                field.key === 'address'
+                                    ? 'whitespace-normal break-words'
+                                    : 'truncate'
+                            "
+                        >
+                            <template v-if="field.key === 'address'">
+                                {{
+                                    [
+                                        checkout.branch.street,
+                                        checkout.branch.city,
+                                        checkout.branch.province,
+                                        checkout.branch.country,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(", ") || "—"
+                                }}
+                            </template>
+
+                            <template v-else-if="field.key === 'hours'">
+                                {{
+                                    checkout.settings?.opening &&
+                                    checkout.settings?.closing
+                                        ? `${checkout.settings.opening} - ${checkout.settings.closing}`
+                                        : "—"
+                                }}
+                            </template>
+
+                            <template v-else-if="field.key === 'currency'">
+                                {{ checkout.settings?.[field.key] || "—" }}
+                            </template>
+
+                            <template v-else>
+                                {{
+                                    checkout.branch[
+                                        field.key as keyof typeof checkout.branch
+                                    ] || "—"
+                                }}
+                            </template>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -80,13 +128,38 @@
                     </span>
 
                     <span
-                        class="font-semibold text-right max-w-[200px] truncate"
+                        class="font-semibold text-right max-w-[200px]"
+                        :class="
+                            field.type === 'computed'
+                                ? 'whitespace-normal break-words'
+                                : 'truncate'
+                        "
                     >
-                        {{
-                            checkout.agency[
-                                field.key as keyof typeof checkout.agency
-                            ] || "—"
-                        }}
+                        <template
+                            v-if="
+                                field.type === 'computed' &&
+                                field.key === 'address'
+                            "
+                        >
+                            {{
+                                [
+                                    checkout.agency.street,
+                                    checkout.agency.city,
+                                    checkout.agency.province,
+                                    checkout.agency.country,
+                                ]
+                                    .filter(Boolean)
+                                    .join(", ") || "—"
+                            }}
+                        </template>
+
+                        <template v-else>
+                            {{
+                                checkout.agency[
+                                    field.key as keyof typeof checkout.agency
+                                ] || "—"
+                            }}
+                        </template>
                     </span>
                 </div>
             </div>
@@ -124,44 +197,57 @@ import {
 } from "~/api/subscription/SubscriptionService";
 
 const checkout = useSubscriptionCheckout();
+const branchImagePreview = computed(() =>
+    checkout.branch.image instanceof File
+        ? URL.createObjectURL(checkout.branch.image)
+        : null,
+);
 
 const send = async () => {
+    console.log("settings:", checkout.settings);
     try {
         const payload: SubscriptionRequest = {
             plan_code: checkout.selectedPlan.plan_code,
-            billing_interval: checkout.selectedInterval,
             payment_method: checkout.payment_method,
+            billing_interval: checkout.selectedInterval,
 
-            // BRANCH
+            //BRANCH DATA
             branch_name: checkout.branch.name,
             branch_street: checkout.branch.street,
-            branch_description: checkout.branch.description,
             branch_city: checkout.branch.city,
             branch_province: checkout.branch.province,
             branch_country: checkout.branch.country,
             branch_contact_number: checkout.branch.contact_number,
             branch_image: checkout.branch.image,
+            branch_description: checkout.branch.description,
+            branch_settings: checkout.settings,
+            branch_latitude: checkout.branch.lat,
+            branch_longitude: checkout.branch.lng,
 
-            // AGENCY
+            // AGENCY DATA
+            agency_id: checkout.agency.id,
             agency_name: checkout.agency.name,
             agency_description: checkout.agency.description,
             agency_street: checkout.agency.street,
             agency_city: checkout.agency.city,
             agency_province: checkout.agency.province,
             agency_country: checkout.agency.country,
+            agency_latitude: checkout.agency.lat,
+            agency_longitude: checkout.agency.lng,
         };
+
         await subscriptionService.validateSubscription(payload);
         checkout.subscriptionPayload = payload;
         await navigateTo({
-            path: "/subscription/checkout/payment",
+            path: "/pricing/subscription-details/checkout",
             query: {
                 code: checkout.selectedPlan?.plan_id,
                 interval: checkout.selectedInterval,
             },
         });
     } catch (err: any) {
-        console.log(err);
         const errors = err?.errors || err?.response?.data?.errors;
+        console.log(err);
         if (errors) {
             checkout.errors = Object.fromEntries(
                 Object.entries(errors).map(([key, value]: any) => [

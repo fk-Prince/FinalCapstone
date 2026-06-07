@@ -1,54 +1,133 @@
 <template>
-    <ClientOnly>
-        <!-- <div
+    <div
+        :class="[
+            'relative rounded-2xl flex flex-col transition-all duration-300',
+            featured
+                ? 'bg-primary text-white shadow-2xl pt-10 pb-8 px-8'
+                : 'bg-white text-secondary shadow-sm border border-muted-light p-8',
+        ]"
+    >
+        <!-- Most Popular Badge -->
+        <div
+            v-if="featured"
+            class="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
+        >
+            <span
+                class="bg-white text-primary text-xs font-bold px-5 py-1.5 rounded-full shadow-md tracking-wide border border-primary/10"
+            >
+                Most Popular
+            </span>
+        </div>
+
+        <div class="mb-4">
+            <span
+                :class="[
+                    'text-xs font-semibold px-3 py-1 rounded-full',
+                    featured
+                        ? 'bg-white/20 text-white'
+                        : 'bg-light text-primary',
+                ]"
+            >
+                {{ planLabel }}
+            </span>
+        </div>
+
+        <div class="mb-6">
+            <h2
+                :class="[
+                    'font-display font-bold text-2xl leading-tight mb-1',
+                    featured ? 'text-white' : 'text-secondary',
+                ]"
+            >
+                {{ title }}
+            </h2>
+            <p :class="['text-sm', featured ? 'text-white/70' : 'text-muted']">
+                {{ description }}
+            </p>
+        </div>
+
+        <div class="flex items-baseline gap-1 mb-5">
+            <span
+                :class="[
+                    'font-display font-extrabold text-4xl',
+                    featured ? 'text-white' : 'text-secondary',
+                ]"
+            >
+                ₱{{ price?.toLocaleString() ?? "—" }}
+            </span>
+            <span
+                :class="[
+                    'text-sm font-medium',
+                    featured ? 'text-white/60' : 'text-muted',
+                ]"
+                >{{ annual ? "/ year" : "/ month" }}</span
+            >
+        </div>
+
+        <NuxtLink
+            to="/pricing/subscription-details"
             :class="[
-                'relative rounded-2xl flex flex-col transition-all duration-300',
+                'w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 mb-6',
                 featured
-                    ? 'bg-primary text-white shadow-2xl pt-10 pb-8 px-8'
-                    : 'bg-white text-secondary shadow-sm border border-muted-light p-8',
+                    ? 'bg-white text-primary hover:bg-light border border-white'
+                    : 'bg-white text-secondary border border-secondary hover:bg-muted-light',
             ]"
         >
-            <div
-                v-if="featured"
-                class="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
-            >
-                <span
-                    class="bg-white text-primary text-xs font-bold px-5 py-1.5 rounded-full shadow-md tracking-wide border border-primary/10"
-                >
-                    Most Popular
-                </span>
-            </div>
+            {{ ctaText }}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+        </NuxtLink>
 
-            <div class="mb-4">
-                <span
-                    :class="[
-                        'text-xs font-semibold px-3 py-1 rounded-full',
-                        featured
-                            ? 'bg-white/20 text-white'
-                            : 'bg-light text-primary',
-                    ]"
+        <div
+            :class="[
+                'w-full h-px mb-5',
+                featured ? 'bg-white/10' : 'bg-muted-light',
+            ]"
+        />
+
+        <ul class="flex flex-col gap-3 flex-1">
+            <li
+                v-for="feature in features"
+                :key="feature"
+                class="flex items-center gap-2.5 text-sm"
+            >
+                <svg
+                    class="w-4 h-4 flex-shrink-0 text-accent"
+                    viewBox="0 0 16 16"
+                    fill="none"
                 >
-                    {{ planLabel }}
+                    <path
+                        d="M3 8l4 4 6-6"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+                <span :class="featured ? 'text-white/85' : 'text-muted-dark'">
+                    {{ feature }}
                 </span>
-            </div>
-        </div> -->
-    </ClientOnly>
+            </li>
+        </ul>
+    </div>
 </template>
 
-<script setup>
-// import { computed } from "vue";
-// const props = defineProps({
-//     planLabel: String,
-//     title: String,
-//     description: String,
-//     price: Number,
-//     annual: Boolean,
-//     ctaText: String,
-//     features: Array,
-//     featured: { type: Boolean, default: false },
-// });
-
-// const displayPrice = computed(() =>
-//     props.annual ? Math.round(props.price * 0.8) : props.price,
-// );
+<script setup lang="ts">
+defineProps<{
+    planLabel: string;
+    title: string;
+    description: string;
+    annual: boolean;
+    price: number | undefined;
+    ctaText: string;
+    features: string[];
+    featured?: boolean;
+}>();
 </script>

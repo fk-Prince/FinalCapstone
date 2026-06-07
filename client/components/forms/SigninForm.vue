@@ -37,7 +37,7 @@ async function handleSignIn() {
     try {
         const res = await authService.login(signinData.value);
         user.value = res.user;
-        localStorage.setItem("auth", user.value.uuid);
+        localStorage.setItem("auth", res.token);
         success(res.message);
         await navigateTo((route.query.redirect as string) || "/");
     } catch (err: any) {
@@ -46,6 +46,45 @@ async function handleSignIn() {
         loading.value = false;
     }
 }
+
+async function googleUrl() {
+    loading.value = true;
+    try {
+        const res = await authService.googleUrl();
+        window.location.href = res.url;
+    } catch (err: any) {
+        error(err?.message);
+    } finally {
+        loading.value = false;
+    }
+}
+// async function googleUrl() {
+//     loading.value = true;
+//     try {
+//         const res = await authService.googleUrl();
+
+//         const popup = window.open(
+//             res.url,
+//             "Google Sign In",
+//             "width=500,height=600,scrollbars=yes,resizable=yes",
+//         );
+
+//         const handler = (event: MessageEvent) => {
+//             if (event.origin !== window.location.origin) return;
+//             const { token } = event.data;
+//             if (!token) return;
+//             window.removeEventListener("message", handler);
+//             popup?.close();
+//             localStorage.setItem("auth", token);
+//             navigateTo((route.query.redirect as string) || "/");
+//         };
+//         window.addEventListener("message", handler);
+//     } catch (err: any) {
+//         error(err?.message);
+//     } finally {
+//         loading.value = false;
+//     }
+// }
 </script>
 
 <template>
@@ -192,7 +231,12 @@ async function handleSignIn() {
                 <span class="flex-1 h-px bg-slate-200" />
             </div>
 
-            <BaseButton variant="secondary" size="lg" :full="true">
+            <BaseButton
+                @click="googleUrl()"
+                variant="secondary"
+                size="lg"
+                :full="true"
+            >
                 <img
                     src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                     alt="Google"

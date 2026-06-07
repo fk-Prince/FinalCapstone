@@ -10,6 +10,7 @@ export interface Subscription {
     agency: Agency;
     errors?: any;
     subscriptionPayload?: SubscriptionRequest | null;
+    settings?: any;
 }
 
 export const useSubscriptionCheckout = defineStore(
@@ -29,17 +30,26 @@ export const useSubscriptionCheckout = defineStore(
                 city: "Davao City",
                 province: "Davao del Sur",
                 country: "PH",
+                lat: 0,
+                lng: 0
             } as Branch,
             agency: {
-                id: "" as string | null,
+                id: null as number | null | undefined,
                 name: "",
                 description: "",
                 street: "",
                 city: "",
                 province: "",
                 country: "",
+                lat: 0,
+                lng: 0
             } as Agency,
-
+            settings: {
+                opening: "12:00 AM",
+                closing: "12:00 AM",
+                currency: "PHP",
+                // additional_payment: "0.00",
+            },
             errors: {},
             subscriptionPayload: null as SubscriptionRequest | null,
         }),
@@ -69,6 +79,20 @@ export const useSubscriptionCheckout = defineStore(
 
             clearError(field: string) {
                 delete this.errors[field];
+            },
+
+            clearAgency() {
+                this.agency = {
+                    id: undefined,
+                    name: "",
+                    description: "",
+                    street: "",
+                    city: "",
+                    province: "",
+                    country: "",
+                    lat: 0,
+                    lng: 0
+                };
             },
 
             clearAllErrors() {

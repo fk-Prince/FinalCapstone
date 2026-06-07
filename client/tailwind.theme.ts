@@ -8,6 +8,7 @@ export const colors = {
         light: '#f3f4f6',
         dark: '#374151',
     },
+    danger: '#f87171'
 }
 
 export const fontFamily = {

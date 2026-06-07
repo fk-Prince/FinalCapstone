@@ -34,6 +34,10 @@ class AuthService extends BaseService {
         return await this.request(this.resource + '/me', 'GET', {});
     }
 
+    async googleUrl(): Promise<any> {
+        return await this.request(this.resource + '/google/url', 'POST', {});
+    }
+
     private get resource(): string {
         const config = useRuntimeConfig();
         return `${config.public.backendApi}/api/auth`;

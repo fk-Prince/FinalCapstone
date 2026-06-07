@@ -92,7 +92,10 @@ class SubscriptionService
                 'province'       => $payload['branch_province'] ?? null,
                 'country'        => $payload['branch_country'] ?? null,
                 'contact_number' => $payload['branch_contact_number'] ?? null,
-                'image'          => $payload['branch_image'] ?? null,
+                'image'          =>  null, //$payload['branch_image'] ??
+                'setting'        => $payload['branch_settings'] ?? null,
+                'latitude'       => $payload['branch_latitude'] ?? null,
+                'longitude'      => $payload['branch_longitude'] ?? null,
             ],
             'agency' => [
                 'id'             => $payload['agency_id'] ?? null,
@@ -103,6 +106,8 @@ class SubscriptionService
                 'city'           => $payload['agency_city'] ?? null,
                 'province'       => $payload['agency_province'] ?? null,
                 'country'        => $payload['agency_country'] ?? null,
+                'latitude'       => $payload['agency_latitude'] ?? null,
+                'longitude'      => $payload['agency_longitude'] ?? null,
             ],
             'method' => $payload['payment_method'],
             'billing_interval' => $billing_interval,
@@ -143,12 +148,15 @@ class SubscriptionService
                     'city' => $agency['city'] ?? null,
                     'province' => $agency['province'] ?? null,
                     'country' => $agency['country'] ?? null,
+                    'latitude' => $agency['latitude'] ?? null,
+                    'longitude' => $agency['longitude'] ?? null,
                 ]);
 
                 $agencyData = $this->agencyRepository->createAgency([
                     'name' => $agencyName,
                     'description' => $agency['description'] ?? null,
                     'location_id' => $agencyLocation->location_id ?? null,
+                    'registered_by' =>  $user['user_id']
                 ]);
             }
 
@@ -169,6 +177,8 @@ class SubscriptionService
                 'name' => $branch['name'] ?? null,
                 'contact_number' => $branch['contact_number'] ?? null,
                 'image' => $branch['image'] ?? null,
+                'latitude' => $agency['latitude'] ?? null,
+                'longitude' => $agency['longitude'] ?? null,
             ]);
 
             if (!$plan['plan_code']) {

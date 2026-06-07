@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Agency;
 use App\Models\Location;
 use App\Models\Plan;
 use App\Models\Price;
@@ -26,7 +27,8 @@ class DatabaseSeeder extends Seeder
             'city' => 'Davao City',
             'province' => 'Davao del Sur',
             'country' => 'Philippines',
-            'postal_code' => '8000',
+            'latitude' => '7.0731',
+            'longitude' => '125.6128'
         ]);
 
         $user = User::factory()->create([
@@ -41,6 +43,15 @@ class DatabaseSeeder extends Seeder
         $role = Role::create([
             'role_type' => 'owner',
         ]);
+
+        for ($i = 1; $i <= 10; $i++) {
+            Agency::create([
+                'name' => "Agency {$i}",
+                'description' => "Sample description for Agency {$i}",
+                'location_id' => 1,
+                'registered_by' =>  $user->user_id
+            ]);
+        }
 
         Role::insert([
             ['role_type' => 'branch_owner'],
@@ -82,7 +93,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'plan_code' => 'C',
-                'name' => 'Homecare + In-house Services',
+                'name' => 'Hybrid',
                 'description' => 'Enjoy a complete care package that combines personalized homecare services with full access to our in-house healthcare facility.',
                 'monthly_price_id' => 3,
                 'yearly_price_id' => 6,

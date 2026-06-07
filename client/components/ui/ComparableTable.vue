@@ -135,12 +135,7 @@ const features = [
     { name: "eMAR & vitals", homecare: true, facility: true, hybrid: true },
     { name: "Family portal", homecare: true, facility: true, hybrid: true },
     { name: "VIP CCTV access", homecare: false, facility: true, hybrid: true },
-    {
-        name: "Manage multiple branch",
-        homecare: false,
-        facility: true,
-        hybrid: true,
-    },
+
     {
         name: "Billing & invoices",
         homecare: true,

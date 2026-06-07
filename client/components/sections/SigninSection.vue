@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import SigninForm from "../forms/SigninForm.vue";
 import signinLogo from "~/assets/logo/signinLogo.png";
-
-useHead({
-    title: "Sign In - AMUMA",
-});
 </script>
 
 <template>

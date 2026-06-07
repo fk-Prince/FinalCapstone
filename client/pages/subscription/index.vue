@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SubscrptionSection from "~/components/sections/SubscrptionSection.vue";
 import SubscriptionSummary from "~/components/sections/SubscriptionSummary.vue";
 
 definePageMeta({

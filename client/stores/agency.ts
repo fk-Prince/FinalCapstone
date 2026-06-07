@@ -1,7 +1,17 @@
 export interface Agency {
-    id?: string;
+    id?: number;
     name: string;
     description: string;
+    street: string;
+    city: string;
+    province: string;
+    country: string;
+    lat?: number,
+    lng?: number
+    location?: Location
+}
+
+export interface Location {
     street: string;
     city: string;
     province: string;
@@ -10,8 +20,5 @@ export interface Agency {
 export const agencyFields: Array<{ key: string; label: string; type: string }> = [
     { key: "name", label: "Agency Name", type: "text" },
     { key: "description", label: "Description", type: "text" },
-    { key: "country", label: "Country", type: "text" },
-    { key: "province", label: "Province", type: "text" },
-    { key: "city", label: "City", type: "text" },
-    { key: "street", label: "Street", type: "text" },
+    { key: "address", label: "Address", type: "computed" },
 ];

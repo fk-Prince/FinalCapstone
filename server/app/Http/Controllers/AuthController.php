@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SigninRequest;
+use App\Http\Requests\SignupRequest;
 use App\Service\AuthService;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -15,6 +18,14 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
+    public function validate(SignupRequest $request)
+    {
+        return response()->json([
+            'status' => true,
+            'message' => 'Validation passed',
+            'data' => $request->validated(),
+        ]);
+    }
 
     public function login(SigninRequest $request)
     {
@@ -24,5 +35,15 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         return $this->authService->logout($request);
+    }
+
+    public function google(Request $request)
+    {
+        return $this->authService->google();
+    }
+
+    public function googleCallback(Request $request)
+    {
+        return $this->authService->googleCallback();
     }
 }

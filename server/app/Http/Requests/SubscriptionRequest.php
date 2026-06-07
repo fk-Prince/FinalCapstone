@@ -15,7 +15,6 @@ class SubscriptionRequest extends FormRequest
 
     public function rules(): array
     {
-
         return [
             'token_id' => ['nullable', 'string'],
             'authentication_id' => ['nullable', 'string'],
@@ -28,10 +27,10 @@ class SubscriptionRequest extends FormRequest
             'agency_id' => ['nullable'],
             'agency_name' => ['nullable', 'string'],
             'agency_description' => ['nullable', 'string'],
-            'agency_street'      => ['nullable', 'required_with:agency_name', 'string'],
-            'agency_city'        => ['nullable', 'required_with:agency_name', 'string'],
-            'agency_province'    => ['nullable', 'required_with:agency_name', 'string'],
-            'agency_country'     => ['nullable', 'required_with:agency_name', 'string'],
+            'agency_street' => ['nullable', 'string'],
+            'agency_city' => ['nullable', 'string'],
+            'agency_province' => ['nullable', 'string'],
+            'agency_country' => ['nullable', 'string'],
 
             // Branch data
             'branch_name' => ['required', 'string', 'unique:branches,name'],
@@ -42,6 +41,10 @@ class SubscriptionRequest extends FormRequest
             'branch_country' => ['required', 'string'],
             'branch_contact_number' => ['nullable', 'string'],
             'branch_image' => ['nullable'],
+            'branch_settings' => ['required', 'array'],
+            'branch_settings.currency' => ['required', 'string'],
+            'branch_settings.opening' => ['required', 'string'],
+            'branch_settings.closing' => ['required', 'string'],
         ];
     }
 }

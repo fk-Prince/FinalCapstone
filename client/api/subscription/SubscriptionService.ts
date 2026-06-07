@@ -9,13 +9,16 @@ export interface SubscriptionRequest {
 
     //BRANCH DATA
     branch_name: string,
-    branch_street: string,
     branch_description?: string,
+    branch_street: string,
     branch_city: string,
     branch_province: string,
     branch_country: string,
     branch_contact_number?: string,
     branch_image?: File | null,
+    branch_settings?: any,
+    branch_latitude: any,
+    branch_longitude: any,
 
     // AGENCY DATA
     agency_id?: number,
@@ -25,6 +28,8 @@ export interface SubscriptionRequest {
     agency_city?: string,
     agency_province?: string,
     agency_country?: string,
+    agency_latitude: any,
+    agency_longitude: any,
 }
 
 

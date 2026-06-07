@@ -25,15 +25,11 @@ class AgencyRepository
         $query = Agency::query();
 
         if ($owned) {
-            $userId = Auth::id();
-
-            $query->whereHas('branches', function ($q) use ($userId) {
-                $q->where('owner_user_id', $userId);
-            });
+            $query->where('registered_by', Auth::id());
         }
 
         return $query
-            ->with('branches')
+            ->with(['locations', 'registered_by'])
             ->latest()
             ->paginate($perPage);
     }

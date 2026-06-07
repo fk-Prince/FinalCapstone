@@ -10,6 +10,13 @@ export class BaseService {
             Accept: "application/json",
         };
 
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("auth");
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+        }
+
         const config: any = {
             baseURL: runtimeConfig.public.backendApi,
             method,

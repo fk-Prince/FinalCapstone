@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NominatimController;
+use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Http\Request;
@@ -13,12 +15,22 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::post('/subscription/success', [SubscriptionController::class, 'subscriptionWebhook']); // SUBSCRIPTION GCASH WEBHOOK
+    Route::post('/google/url', [AuthController::class, 'google']);
+    Route::get('/google/callback', [AuthController::class, 'googleCallback']);
+
+    Route::prefix('otp')->group(function () {
+        Route::post('/send', [OtpController::class, 'send']);
+        Route::post('/verify', [OtpController::class, 'verify']);
+    });
 });
 
 Route::apiResources([
     'plans' => PlanController::class
 ]);
 
+
+Route::get('/reverse-geocode', [NominatimController::class, 'reverse']);
+Route::get('/nereast-street', [NominatimController::class, 'nearest']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscription', [SubscriptionController::class, 'newSubscription']);

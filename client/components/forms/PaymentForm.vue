@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSubscriptionCheckout } from "~/stores/subscription";
 import visaIcon from "@/assets/icons/visa.png";
+import gcashIcon from "@/assets/icons/gcash.jpeg";
 import LabelInput from "../ui/BaseInput.vue";
 import { type CardDetails } from "~/composables/useSubscriptionPayment";
 
@@ -23,12 +24,14 @@ const updateCard = (key: any, value: any) => {
 
 const methods = [
     { value: "CREDIT-CARD", label: "CREDIT-CARD", image: visaIcon },
-    { value: "GCASH", label: "GCASH", image: visaIcon },
+    { value: "GCASH", label: "GCASH", image: gcashIcon },
 ];
 </script>
 
 <template>
-    <div class="bg-white overflow-hidden max-w-md">
+    <div
+        class="bg-white overflow-hidden max-w-md border border-muted-light p-5 rounded-xl shadow"
+    >
         <div class="p-5">
             <h2 class="text-2xl font-bold text-gray-800">Payment Method</h2>
         </div>
@@ -39,7 +42,7 @@ const methods = [
                     v-for="method in methods"
                     :key="method.value"
                     @click="checkout.payment_method = method.value"
-                    class="w-20 h-14 rounded-xl flex items-center justify-center transition border-2"
+                    class="w-20 h-14 rounded-xl flex items-center justify-center overflow-hidden transition border-2"
                     :class="
                         checkout.payment_method === method.value
                             ? 'border-blue-600 bg-white shadow-md'
@@ -49,7 +52,7 @@ const methods = [
                     <img
                         :src="method.image"
                         :alt="method.label"
-                        class="h-8 object-contain"
+                        class="w-full h-full object-cover"
                     />
                 </button>
             </div>
@@ -98,12 +101,12 @@ const methods = [
             </div>
 
             <label class="flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" class="accent-blue-600" />
+                <input type="checkbox" class="accent-primary" />
                 Save my payment information
             </label>
             <button
                 @click="onCardPay"
-                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition"
+                class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition"
             >
                 Confirm Payment
             </button>
@@ -113,12 +116,12 @@ const methods = [
             <div
                 class="bg-blue-50 border border-blue-200 rounded-xl p-5 text-center"
             >
-                <h3 class="font-semibold text-lg text-blue-700">
+                <h3 class="font-semibold text-lg text-primary">
                     GCash Payment
                 </h3>
                 <button
                     @click="onGCashPay"
-                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition"
+                    class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition"
                 >
                     Confirm Payment
                 </button>

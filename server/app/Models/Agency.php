@@ -18,11 +18,17 @@ class Agency extends Model
         'name',
         'description',
         'location_id',
+        'registered_by',
     ];
 
     public function uniqueIds()
     {
         return ['uuid'];
+    }
+
+    public function registered_by()
+    {
+        return $this->belongsTo(User::class, 'registered_by', 'user_id');
     }
 
     public function locations()
