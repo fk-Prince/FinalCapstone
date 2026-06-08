@@ -1,4 +1,5 @@
 import { authService } from "~/api/auth/AuthService";
+import { useAuthUser, useAuthReady, resetAuth } from "~/composables/useAuthUser";
 
 export default defineNuxtPlugin(async () => {
     const user = useAuthUser();

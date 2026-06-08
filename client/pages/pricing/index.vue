@@ -48,6 +48,7 @@ import BillingToggle from "~/components/ui/BillingToggle.vue";
 import PricingCard from "~/components/ui/PricingCard.vue";
 import { planService } from "@/api/plan/PlanService";
 import ComparableTable from "~/components/ui/ComparableTable.vue";
+import { useSubscriptionCheckout } from "~/stores/subscription";
 
 useHead({ title: "Pricing" });
 definePageMeta({
