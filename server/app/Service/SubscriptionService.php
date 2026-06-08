@@ -45,7 +45,7 @@ class SubscriptionService
         $this->roleRepository = $roleRepository;
         $this->userRepository = $userRepository;
         $this->locationRepository =  $locationRepository;
-        $this->secretKey = env('XENDIT_SECRET_KEY');
+        $this->secretKey = config('services.xendit.secret_key');
     }
 
 
@@ -132,94 +132,103 @@ class SubscriptionService
             $reference_id = $payload['external_id'];
             $xendit_invoice_id = $payload['xendit_invoice_id'];
 
+            try {
+                $agencyData = null;
+                $agencyId = $agency['id'] ?? null;
+                $agencyName = $agency['name'] ?? null;
 
+                if (!empty($agencyId)) {
+                    $agencyData = $this->agencyRepository->findAgencyByField('agency_id', $agencyId);
+                }
 
-            $agencyData = null;
-            $agencyId = $agency['id'] ?? null;
-            $agencyName = $agency['name'] ?? null;
+                if (empty($agencyData) && !empty($agencyName)) {
+                    $agencyLocation = $this->locationRepository->create([
+                        'street'    => $agency['street'] ?? null,
+                        'city'      => $agency['city'] ?? null,
+                        'province'  => $agency['province'] ?? null,
+                        'country'   => $agency['country'] ?? null,
+                        'latitude'  => $agency['latitude'] ?? null,
+                        'longitude' => $agency['longitude'] ?? null,
+                    ]);
 
-            if (!empty($agencyId)) {
-                $agencyData = $this->agencyRepository->findAgencyByField('agency_id', $agencyId);
-            }
+                    $agencyData = $this->agencyRepository->createAgency([
+                        'name'          => $agencyName,
+                        'description'   => $agency['description'] ?? null,
+                        'location_id'   => $agencyLocation->location_id ?? null,
+                        'registered_by' => $user['user_id'],
+                    ]);
+                }
 
-            if (empty($agencyData) && !empty($agencyName)) {
-                $agencyLocation = $this->locationRepository->create([
-                    'street' => $agency['street'] ?? null,
-                    'city' => $agency['city'] ?? null,
-                    'province' => $agency['province'] ?? null,
-                    'country' => $agency['country'] ?? null,
-                    'latitude' => $agency['latitude'] ?? null,
-                    'longitude' => $agency['longitude'] ?? null,
+                $branchLocation = $this->locationRepository->create([
+                    'street'   => $branch['street'] ?? null,
+                    'city'     => $branch['city'] ?? null,
+                    'province' => $branch['province'] ?? null,
+                    'country'  => $branch['country'] ?? null,
                 ]);
 
-                $agencyData = $this->agencyRepository->createAgency([
-                    'name' => $agencyName,
-                    'description' => $agency['description'] ?? null,
-                    'location_id' => $agencyLocation->location_id ?? null,
-                    'registered_by' =>  $user['user_id']
+                $branchData = $this->branchRepository->create([
+                    'owner_user_id'  => $user['user_id'],
+                    'agency_id'      => $agencyData->agency_id ?? null,
+                    'location_id'    => $branchLocation->location_id,
+                    'description'    => $branch['description'] ?? null,
+                    'name'           => $branch['name'] ?? null,
+                    'contact_number' => $branch['contact_number'] ?? null,
+                    'image'          => $branch['image'] ?? null,
+                    'latitude'       => $branch['latitude'] ?? null,
+                    'longitude'      => $branch['longitude'] ?? null,
                 ]);
-            }
 
+                if (empty($plan['plan_code'])) {
+                    throw new \Exception('Invalid plan type.');
+                }
 
-            $branchLocation = $this->locationRepository->create([
-                'street' => $branch['street'] ?? null,
-                'city' => $branch['city'] ?? null,
-                'province' => $branch['province'] ?? null,
-                'country' => $branch['country'] ?? null,
-            ]);
+                $subscription = $this->subscriptionRepository->create([
+                    'plan_id'          => $plan['plan_id'],
+                    'branch_id'        => $branchData['branch_id'],
+                    'billing_interval' => $billing_interval,
+                    'status'           => 'active',
+                    'start_date'       => Carbon::now(),
+                    'end_date'         => $endDate,
+                ]);
 
+                $priceKey   = BillingIntervalEnum::from($billing_interval)->loadPrice();
+                $priceModel = data_get($plan, $priceKey);
 
-            $branch = $this->branchRepository->create([
-                'owner_user_id' => $user['user_id'],
-                'agency_id' =>   $agencyData->agency_id ?? null,
-                'location_id' => $branchLocation->location_id,
-                'description' => $branch['description'] ?? null,
-                'name' => $branch['name'] ?? null,
-                'contact_number' => $branch['contact_number'] ?? null,
-                'image' => $branch['image'] ?? null,
-                'latitude' => $agency['latitude'] ?? null,
-                'longitude' => $agency['longitude'] ?? null,
-            ]);
+                $subscription->subscription_payments()->create([
+                    'subscription_id'      => $subscription->subscription_id,
+                    'xendit_invoice_id'    => $xendit_invoice_id,
+                    'payment_reference_id' => $reference_id,
+                    'price_id'             => $priceModel['price_id'],
+                ]);
 
-            if (!$plan['plan_code']) {
+                $role = $this->roleRepository->findByUuid('role_type', 'branch_owner');
+                $userModel = $this->userRepository->findByField('user_id', $user['user_id']);
+                $userModel->roles()->attach($role->role_id, [
+                    'is_active' => true,
+                ]);
+
                 return response()->json([
-                    'status' => false,
-                    'message' => __('Invalid Plan Type')
-                ], 422);
-                // throw new \Exception('Invalid plan type',422);
+                    'status'  => true,
+                    'message' => __('Subscription created successfully.'),
+                ], 201);
+            } catch (\Exception $e) {
+                Http::withHeaders([
+                    'Authorization' => 'Basic ' . $this->secretKey,
+                    'Content-Type'  => 'application/json',
+                ])->post("https://api.xendit.co/credit_card_charges/{$xendit_invoice_id}/refunds", [
+                    'amount'      => $meta['total_amount'],
+                    'external_id' => (string) Str::uuid(),
+                    'metadata'    => [
+                        'reason' => 'Subscription creation failed — auto refund.',
+                    ],
+                ]);
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Subscription failed. Your payment has been refunded.',
+                    'error'   => $e->getMessage(),
+                ], 500);
             }
-
-            $subscription = $this->subscriptionRepository->create([
-                'plan_id' => $plan['plan_id'],
-                'branch_id' => $branch['branch_id'],
-                'billing_interval' => $billing_interval,
-                'status' => 'active',
-                'start_date' => Carbon::now(),
-                'end_date' => $endDate
-            ]);
-
-            $priceKey = BillingIntervalEnum::from($billing_interval)->loadPrice();
-            $priceModel = data_get($plan, $priceKey);
-
-            $subscription->subscription_payments()->create([
-                'subscription_id' => $subscription->subscription_id,
-                'xendit_invoice_id' => $xendit_invoice_id,
-                'payment_reference_id' => $reference_id,
-                'price_id' => $priceModel['price_id'],
-            ]);
-
-
-            $role = $this->roleRepository->findByUuid('role_type', 'branch_owner');
-            $user = $this->userRepository->findByField('user_id', $user['user_id']);
-            $user->roles()->attach($role->role_id, [
-                'is_active' => true
-            ]);
-
-
-            return response()->json([
-                'status' => true,
-                'message' => __('Subscription created successfully.')
-            ], 201);
         });
     }
 

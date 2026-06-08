@@ -18,6 +18,6 @@ export default defineNuxtRouteMiddleware((to) => {
     const interval = to.query.interval as string | undefined;
 
     if (!checkout.selectedPlan && (!code || !interval)) {
-        return navigateTo("/subscription");
+        return navigateTo("/pricing");
     }
 });

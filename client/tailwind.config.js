@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-import { colors, fontFamily, borderRadius } from "./tailwind.theme";
+import { colors, fontFamily } from "./tailwind.theme";
 export default {
     content: [
         "./components/**/*.{vue,js,ts}",
@@ -16,7 +16,6 @@ export default {
         extend: {
             colors,
             fontFamily,
-            borderRadius,
         },
     },
     plugins: [],

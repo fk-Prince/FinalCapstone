@@ -9,6 +9,7 @@ const checkout = useSubscriptionCheckout();
 
 const props = defineProps<{
     card: CardDetails;
+    processing: boolean;
     onCardPay?: () => void | Promise<void>;
     onGCashPay?: () => void | Promise<void>;
 }>();
@@ -106,9 +107,11 @@ const methods = [
             </label>
             <button
                 @click="onCardPay"
-                class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition"
+                :disabled="processing"
+                class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                Confirm Payment
+                <span v-if="processing">Processing...</span>
+                <span v-else>Pay with Card</span>
             </button>
         </div>
 
@@ -121,9 +124,10 @@ const methods = [
                 </h3>
                 <button
                     @click="onGCashPay"
-                    class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition"
+                    class="w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Confirm Payment
+                    <span v-if="processing">Processing...</span>
+                    <span v-else>Pay with GCash</span>
                 </button>
                 <p class="text-sm text-gray-600 mt-2">
                     You will be redirected to GCash to complete your payment.

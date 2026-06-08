@@ -2,19 +2,21 @@
     <ClientOnly>
         <header :class="header">
             <nav
-                class="relative mx-auto flex h-full max-w-[115rem] items-center px-6"
+                class="mx-auto grid h-full w-full grid-cols-2 md:grid-cols-3 items-center px-6"
             >
-                <NuxtLink to="/" class="shrink-0 z-10">
-                    <img
-                        :src="logoAmuma"
-                        alt="AMUMA logo"
-                        class="md:w-[250px] w-[170px] object-contain"
-                    />
-                </NuxtLink>
+                <div class="flex justify-start">
+                    <NuxtLink to="/" class="flex items-center">
+                        <img
+                            :src="logoAmuma"
+                            alt="AMUMA logo"
+                            class="w-[170px] md:w-[250px] object-contain"
+                        />
+                    </NuxtLink>
+                </div>
 
                 <div
                     v-if="variant === 'full'"
-                    class="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-[3rem] text-sm text-gray-600"
+                    class="hidden md:flex justify-center items-center gap-12 text-sm text-gray-600"
                 >
                     <NuxtLink
                         v-for="item in navItems"
@@ -24,24 +26,30 @@
                     >
                         {{ item.label }}
                     </NuxtLink>
-                    <div v-if="!user" class="flex items-center gap-2">
-                        <NuxtLink
-                            to="/auth/signin"
-                            class="px-7 py-2 text-black uppercase bg-primary border rounded-sm"
-                        >
-                            Sign in
-                        </NuxtLink>
-                        <NuxtLink
-                            to="/auth/signup"
-                            class="px-7 py-2 text-black uppercase bg-secondary border rounded-sm"
-                        >
-                            Sign up
-                        </NuxtLink>
-                    </div>
                 </div>
 
-                <div class="flex items-center gap-4 ml-auto z-10">
-                    <div v-if="user" class="flex items-center gap-3">
+                <div class="flex justify-end items-center gap-4">
+                    <template v-if="!user">
+                        <div
+                            v-if="variant === 'full'"
+                            class="hidden md:flex items-center gap-2"
+                        >
+                            <NuxtLink
+                                to="/auth/signin"
+                                class="px-7 py-2 text-black uppercase bg-primary border rounded-sm"
+                            >
+                                Sign in
+                            </NuxtLink>
+                            <NuxtLink
+                                to="/auth/signup"
+                                class="px-7 py-2 text-black uppercase bg-secondary rounded-sm"
+                            >
+                                Sign up
+                            </NuxtLink>
+                        </div>
+                    </template>
+
+                    <template v-else>
                         <BaseDropdownMenu align="right" width="w-56">
                             <template #trigger="{ toggle, open }">
                                 <button
@@ -63,17 +71,16 @@
                                     >
                                         <span
                                             class="text-sm font-medium text-gray-800"
+                                            >{{ user.first_name }}
+                                            {{ user.last_name }}</span
                                         >
-                                            {{ user.first_name }}
-                                            {{ user.last_name }}
-                                        </span>
                                         <span class="text-xs text-gray-400"
                                             >View profile</span
                                         >
                                     </div>
                                     <ChevronIcon
                                         :isOpen="open"
-                                        class="text-gray-400 w-4 h-4 hidden md:block"
+                                        class="hidden md:block w-4 h-4 text-gray-400"
                                     />
                                 </button>
                             </template>
@@ -84,7 +91,7 @@
                                 >
                                     <img
                                         :src="avatarSrc"
-                                        class="w-10 h-10 rounded-full border object-cover shrink-0"
+                                        class="w-10 h-10 rounded-full border object-cover"
                                         alt="Profile"
                                     />
                                     <div class="flex flex-col min-w-0">
@@ -101,7 +108,6 @@
                                         </p>
                                     </div>
                                 </div>
-
                                 <div class="py-1">
                                     <DropdownItem
                                         icon="user"
@@ -124,9 +130,7 @@
                                         "
                                     />
                                 </div>
-
                                 <DropdownDivider />
-
                                 <div class="py-1">
                                     <DropdownItem
                                         icon="logout"
@@ -142,10 +146,12 @@
                                 </div>
                             </template>
                         </BaseDropdownMenu>
-                    </div>
+                    </template>
 
                     <button
-                        class="md:hidden flex items-center justify-center w-10 h-10"
+                        @click="mobileMenuOpen = true"
+                        class="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+                        aria-label="Open menu"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -153,9 +159,7 @@
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="w-6 h-6 text-black"
+                            class="w-6 h-6"
                         >
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <line x1="3" y1="12" x2="21" y2="12" />
@@ -164,6 +168,21 @@
                     </button>
                 </div>
             </nav>
+
+            <DynamicSidebar
+                :open="mobileMenuOpen"
+                :logo="logoAmuma"
+                :navItems="navItems"
+                :user="user"
+                :avatarSrc="avatarSrc"
+                @close="mobileMenuOpen = false"
+                @logout="
+                    () => {
+                        logout();
+                        mobileMenuOpen = false;
+                    }
+                "
+            />
         </header>
     </ClientOnly>
 </template>
@@ -171,29 +190,38 @@
 <script setup lang="ts">
 import logoAmuma from "~/assets/logo/logoAmuma.png";
 import { useAuthUser } from "~/composables/useAuthUser";
-import BaseDropdownMenu from "./BaseDropdownMenu.vue";
-import DropdownDivider from "./DropdownDivider.vue";
-import DropdownItem from "./DropdownItem.vue";
+import BaseDropdownMenu from "../ui/BaseDropdownMenu.vue";
+import DropdownDivider from "../ui/DropdownDivider.vue";
+import DropdownItem from "../ui/DropdownItem.vue";
 import ChevronIcon from "../icons/dropdown.vue";
+import { ref, computed } from "vue";
+import DynamicSidebar from "./DynamicSidebar.vue";
+import { useRoute, navigateTo } from "#imports";
 import { authService } from "~/api/auth/AuthService.js";
 import { useToast } from "~/composables/useToast";
 
 const { success, error } = useToast();
-const route = useRoute();
 const user = useAuthUser();
+const route = useRoute();
 
-const initials = computed(() => {
-    const u = user.value;
-    const first = u?.first_name?.[0] ?? "";
-    const last = u?.last_name?.[0] ?? "";
-    return (first + last).toUpperCase();
-});
+const mobileMenuOpen = ref(false);
 
-const avatarSrc = computed(
-    () =>
-        `https://ui-avatars.com/api/?name=${initials.value}&background=random&color=fff&bold=true`,
+const props = withDefaults(
+    defineProps<{ navItems?: { label: string; to: string }[] }>(),
+    {
+        navItems: () => [
+            { label: "Pricing", to: "/pricing" },
+            { label: "Booking", to: "/booking" },
+            { label: "Docs", to: "/docs" },
+            { label: "Company", to: "/company" },
+        ],
+    },
 );
 
+const variant = computed(() => route.meta.navVariant ?? "full");
+const header = computed(
+    () => route.meta.navHeaderClass ?? "w-full h-[90px] bg-white",
+);
 const logout = async () => {
     try {
         const res = await authService.logout();
@@ -206,19 +234,15 @@ const logout = async () => {
     }
 };
 
-type NavItem = { label: string; to: string };
-
-const props = withDefaults(defineProps<{ navItems?: NavItem[] }>(), {
-    navItems: () => [
-        { label: "Pricing", to: "/pricing" },
-        { label: "Booking", to: "/booking" },
-        { label: "Docs", to: "/docs" },
-        { label: "Company", to: "/company" },
-    ],
+const initials = computed(() => {
+    const u = user.value;
+    return (
+        (u?.first_name?.[0] ?? "") + (u?.last_name?.[0] ?? "")
+    ).toUpperCase();
 });
 
-const variant = computed(() => route.meta.navVariant ?? "full");
-const header = computed(
-    () => route.meta.navHeaderClass ?? "w-full h-[90px] bg-white",
+const avatarSrc = computed(
+    () =>
+        `https://ui-avatars.com/api/?name=${initials.value}&background=random&color=fff`,
 );
 </script>

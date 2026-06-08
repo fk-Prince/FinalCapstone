@@ -24,6 +24,17 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/subscription', [SubscriptionController::class, 'newSubscription']);
+    Route::get('/subscription-detail', [SubscriptionController::class, 'retrieveSubscriptionDetail']);
+    Route::post('/subscription-validate', [SubscriptionController::class, 'validateSubscription']);
+
+    Route::apiResources([
+        'agencies' => AgencyController::class
+    ]);
+});
+
+
 Route::apiResources([
     'plans' => PlanController::class
 ]);
@@ -31,15 +42,3 @@ Route::apiResources([
 
 Route::get('/reverse-geocode', [NominatimController::class, 'reverse']);
 Route::get('/nereast-street', [NominatimController::class, 'nearest']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/subscription', [SubscriptionController::class, 'newSubscription']);
-    Route::get('/subscription-detail', [SubscriptionController::class, 'retrieveSubscriptionDetail']);
-    Route::post('/subscription-validate', [SubscriptionController::class, 'validateSubscription']);
-
-
-
-    Route::apiResources([
-        'agencies' => AgencyController::class
-    ]);
-});

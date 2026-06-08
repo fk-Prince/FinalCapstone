@@ -14,22 +14,23 @@ export interface CardDetails {
 
 
 
-
-export async function cardPayment(card: CardDetails, checkout: any, closeModal: any, subData: SubscriptionRequest) {
-    let data;
+export async function cardPayment(
+    card: CardDetails,
+    closeModal: any,
+    subData: SubscriptionRequest
+): Promise<any> {
     const config = useRuntimeConfig();
     window.Xendit.setPublishableKey(config.public.xenditPublicKey);
-
     const res = await subscriptionService.retrieveSubscriptionDetail(subData);
+
     if (!res.status) return;
 
-    let cardData = {
+    const cardData = {
         amount: Number(res.total_amount),
         card_number: card.number.toString().replace(/\s/g, ""),
         card_exp_month: String(card.expMonth),
         card_exp_year: String(
-            Math.floor(new Date().getFullYear() / 100) * 100 +
-            Number(card.expYear),
+            Math.floor(new Date().getFullYear() / 100) * 100 + Number(card.expYear)
         ),
         card_cvc: card.cvc,
         card_holder_first_name: res.user.first_name,
@@ -37,117 +38,97 @@ export async function cardPayment(card: CardDetails, checkout: any, closeModal: 
         card_holder_email: res.user.email,
     };
 
-    window.Xendit.card.createToken(
-        {
-            ...cardData,
-            is_multiple_use: false,
-            should_authenticate: true,
-        },
-        async (err: any, token: any) => {
-            if (err) return console.error(err);
+    return new Promise((resolve, reject) => {
+        window.Xendit.card.createToken(
+            { ...cardData, is_multiple_use: false, should_authenticate: true },
+            async (err: any, token: any) => {
+                if (err) return reject(err);
 
-            window.Xendit.card.createAuthentication(
-                {
-                    token_id: token.id,
-                    amount: cardData.amount,
-                },
-                async (err: any, auth: any) => {
-                    if (err) return console.error(err);
+                window.Xendit.card.createAuthentication(
+                    { token_id: token.id, amount: cardData.amount },
+                    async (err: any, auth: any) => {
+                        if (err) return reject(err);
 
-                    const executePayment = async () => {
-                        const result = await subscriptionService.createSubscription({
-                            token_id: token.id,
-                            authentication_id: auth.id,
-                            ...subData
-                        });
+                        let popupClose: (() => void) | null = null;
 
-                        console.log("Payment success:", result);
-                        data = result;
-                        return data;
-                    };
-
-                    if (
-                        auth.status === "IN_REVIEW" &&
-                        auth.payer_authentication_url
-                    ) {
-                        const { close, onComplete } = handle3DS(
-                            auth.payer_authentication_url,
-                        );
-
-                        closeModal.value = close;
-
-                        onComplete(async () => {
-                            try {
-                                const result = await executePayment();
-
-                                if (closeModal.value) {
-                                    closeModal.value();
-                                }
-
-                                await navigateTo({
-
-                                    path: "/subscription/summary",
-                                    query: {
-                                        status: result.status,
-                                    },
-                                });
-                                return data = result;
-                            } catch (err) {
-                                console.error(err);
-                            }
-                        });
-                        return;
-                    }
-
-                    if (auth.status === "VERIFIED") {
-                        try {
-                            const result = await executePayment();
-                            setTimeout(() => {
-                                if (closeModal.value) {
-                                    closeModal.value();
-                                }
-                            }, 3000);
-
-                            await navigateTo({
-                                path: "/subscription/summary",
-                                query: {
-                                    status: result.status,
-                                },
+                        const executePayment = async () => {
+                            return await subscriptionService.createSubscription({
+                                token_id: token.id,
+                                authentication_id: auth.id,
+                                ...subData,
                             });
+                        };
+
+                        const finish = async (result: any) => {
+                            popupClose?.();
+                            closeModal.value?.();
+                            await navigateTo({
+                                path: "/pricing/subscription-summary",
+                                query: { status: result.status },
+                            });
+                            resolve(result);
+                        };
+
+                        try {
+                            if (auth.status === "IN_REVIEW" && auth.payer_authentication_url) {
+                                const { close, onComplete } = handle3DS(auth.payer_authentication_url);
+                                popupClose = close;
+                                closeModal.value = close;
+
+                                onComplete(async () => {
+                                    try {
+                                        const result = await executePayment();
+                                        await finish(result);
+                                    } catch (err) {
+                                        popupClose?.();
+                                        reject(err);
+                                    }
+                                });
+                                return;
+                            }
+
+                            if (auth.status === "VERIFIED") {
+                                const result = await executePayment();
+                                await finish(result);
+                                return;
+                            }
+
+                            reject(new Error(`Unhandled auth status: ${auth.status}`));
+
                         } catch (err) {
-                            console.error(err);
+                            popupClose?.();
+                            reject(err);
                         }
                     }
-                },
-            );
-        },
-    );
+                );
+            }
+        );
+    });
 }
+export async function gcashPayment(
+    closeModal: Ref<(() => void) | null>,
+    subData: SubscriptionRequest
+): Promise<any> {
+    const res = await subscriptionService.createSubscription(subData);
+    const url = res?.invoice_url;
 
-
-export async function gcashPayment(checkout: any, closeModal: any, subData: SubscriptionRequest) {
-    try {
-        const res = await subscriptionService.createSubscription(subData);
-        const url = res?.invoice_url;
-        if (!url) return;
-
-        const { close, onComplete } = handle3DS(url, "GCash Payment");
-        closeModal.value = close;
-        onComplete(async () => {
-            setTimeout(() => {
-                if (closeModal.value) {
-                    closeModal.value();
-                }
-            }, 3000);
-
-            await navigateTo({
-                path: "/subscription/summary",
-                query: {
-                    status: res.status,
-                },
-            });
-        });
-    } catch (err) {
-        console.error(err);
+    if (!url) {
+        console.error('No invoice URL returned');
+        return;
     }
-};
+
+    const { close, onComplete } = handle3DS(url, "GCash Payment");
+    closeModal.value = close;
+
+    return new Promise((resolve, reject) => {
+        onComplete(async () => {
+            try {
+                close();
+                closeModal.value?.();
+                resolve(res);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+}

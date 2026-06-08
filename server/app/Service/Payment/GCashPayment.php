@@ -13,7 +13,7 @@ class GCashPayment implements ISubscriptionPayment
 
     public function __construct()
     {
-        $this->secretKey = env('XENDIT_SECRET_KEY');
+        $this->secretKey = config('services.xendit.secret_key');
     }
 
     public function subscriptionInvoice(array $payload, array $subscription)
@@ -26,6 +26,8 @@ class GCashPayment implements ISubscriptionPayment
                 'amount' => $subscription['total_amount'],
                 'payer_email' => $user->email,
                 'payment_methods' => ['GCASH'],
+                'success_redirect_url' => config('app.client_url') . '/pricing/subscription-summary?status=success',
+                'failure_redirect_url' => config('app.client_url') . '/pricing/subscription-summary?status=failed',
                 'metadata' => [
                     'type' => $subscription['type'],
                     'plan' => $subscription['plan'],

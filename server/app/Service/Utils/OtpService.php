@@ -48,7 +48,6 @@ class OtpService
             ], 422);
         }
 
-
         if ($data['otp'] != $payload['otp_value']) {
             return response()->json([
                 'message' => __('Invalid OTP.')

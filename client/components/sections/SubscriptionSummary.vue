@@ -204,7 +204,6 @@ const branchImagePreview = computed(() =>
 );
 
 const send = async () => {
-    console.log("settings:", checkout.settings);
     try {
         const payload: SubscriptionRequest = {
             plan_code: checkout.selectedPlan.plan_code,
@@ -247,7 +246,6 @@ const send = async () => {
         });
     } catch (err: any) {
         const errors = err?.errors || err?.response?.data?.errors;
-        console.log(err);
         if (errors) {
             checkout.errors = Object.fromEntries(
                 Object.entries(errors).map(([key, value]: any) => [

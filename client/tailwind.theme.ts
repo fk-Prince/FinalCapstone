@@ -15,6 +15,4 @@ export const fontFamily = {
     sans: ['DM Sans', 'sans-serif'],
 }
 
-export const borderRadius = {
-    DEFAULT: '8px',
-}
+

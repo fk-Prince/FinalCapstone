@@ -47,7 +47,7 @@ class MakeStub extends Command
         $content = <<<PHP
         <?php
 
-        namespace {$namespace};
+        namespace App\{$namespace};
 
         class {$className}
         {

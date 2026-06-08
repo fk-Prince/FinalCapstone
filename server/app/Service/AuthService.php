@@ -2,18 +2,12 @@
 
 namespace App\Service;
 
-use App\Mail\OtpMailer;
 use App\Repository\UserRepository;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
-use Nette\Schema\ValidationException;
 
 class AuthService
 {
@@ -114,7 +108,7 @@ class AuthService
             [
                 'first_name'      => explode(' ', $googleUser->getName())[0],
                 'last_name'       => explode(' ', $googleUser->getName())[1] ?? '',
-                'google_id'       => $googleUser->getId(),
+                'uuid'            => $googleUser->getId(),
                 'avatar'          => $googleUser->getAvatar(),
                 'provider'        => 'google',
             ]

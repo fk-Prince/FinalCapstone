@@ -1,7 +1,6 @@
 <template>
     <div class="min-h-screen bg-white">
         <main class="max-w-6xl mx-auto px-6 py-16">
-            <!-- HEADER -->
             <div class="text-center mb-10">
                 <p
                     class="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-4"
@@ -17,19 +16,16 @@
                 </h1>
             </div>
 
-            <!-- BILLING TOGGLE -->
             <div class="flex justify-center mb-12">
                 <BillingToggle v-model:annual="annual" />
             </div>
 
-            <!-- LOADING -->
             <div v-if="loading" class="flex justify-center py-20">
                 <div
                     class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"
                 />
             </div>
 
-            <!-- PRICING GRID -->
             <div
                 v-else
                 class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch"
