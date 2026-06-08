@@ -6,7 +6,10 @@
     "scripts": {
         "artisan": "cd server && php artisan serve",
         "client": "pnpm --prefix client run dev",
-        "dev": "concurrently \"npm run artisan\" \"npm run client\""
+        "dev": "concurrently \"npm run artisan\" \"npm run client\"",
+        "setup:server": "cd server && composer install && cp .env.example .env",
+        "setup:client": "pnpm --prefix client install && cp client/.env.example client/.env",
+        "setup": "npm run setup:server && npm run setup:client"
     },
     "keywords": [],
     "author": "",
