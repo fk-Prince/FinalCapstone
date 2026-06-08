@@ -19,20 +19,32 @@ export const useSubscriptionCheckout = defineStore(
         state: (): Subscription => ({
             plans: [] as any[],
             selectedPlan: null as any,
-            selectedInterval: "monthly",
+            selectedInterval: "",
             payment_method: "CREDIT-CARD",
             branch: {
-                name: "AMUMA",
-                contact_number: "09771171913",
+                name: "",
+                contact_number: "",
                 image: null as File | null,
-                street: "Roxas Avenue",
-                description: "Homecare Facility",
-                city: "Davao City",
-                province: "Davao del Sur",
-                country: "PH",
+                street: "",
+                description: "",
+                city: "",
+                province: "",
+                country: "",
                 lat: 0,
                 lng: 0
             } as Branch,
+            // branch: {
+            //     name: "AMUMA",
+            //     contact_number: "09771171913",
+            //     image: null as File | null,
+            //     street: "Roxas Avenue",
+            //     description: "Homecare Facility",
+            //     city: "Davao City",
+            //     province: "Davao del Sur",
+            //     country: "PH",
+            //     lat: 0,
+            //     lng: 0
+            // } as Branch,
             agency: {
                 id: null as number | null | undefined,
                 name: "",
@@ -101,8 +113,37 @@ export const useSubscriptionCheckout = defineStore(
 
             reset() {
                 this.selectedPlan = null;
-                this.selectedInterval = "monthly";
-                this.payment_method = "CREDIT-CARD";
+                this.selectedInterval = "";
+                this.branch = {
+                    name: "",
+                    contact_number: "",
+                    image: null,
+                    street: "",
+                    description: "",
+                    city: "",
+                    province: "",
+                    country: "",
+                    lat: 0,
+                    lng: 0,
+                } as Branch;
+                this.agency = {
+                    id: undefined,
+                    name: "",
+                    description: "",
+                    street: "",
+                    city: "",
+                    province: "",
+                    country: "",
+                    lat: 0,
+                    lng: 0,
+                } as Agency;
+                this.settings = {
+                    opening: "12:00 AM",
+                    closing: "12:00 AM",
+                    currency: "PHP",
+                };
+                this.errors = {};
+                this.subscriptionPayload = null;
             },
 
         },

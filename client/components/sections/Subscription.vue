@@ -13,8 +13,7 @@
             <div
                 class="bg-white border rounded-2xl shadow-sm divide-y divide-gray-100"
             >
-                <!-- PLAN -->
-                <section>
+                <section id="section-plan">
                     <button
                         class="w-full flex items-center justify-between p-5 text-left"
                         @click="isPlanOpen = !isPlanOpen"
@@ -78,8 +77,7 @@
                     </Transition>
                 </section>
 
-                <!-- BILLING INTERVAL -->
-                <section>
+                <section id="section-billing">
                     <button
                         class="w-full flex items-center justify-between p-5 text-left"
                         @click="isBillingOpen = !isBillingOpen"
@@ -136,8 +134,7 @@
                     </Transition>
                 </section>
 
-                <!-- BRANCH -->
-                <section>
+                <section id="section-branch">
                     <button
                         class="w-full flex items-center justify-between p-5 text-left"
                         @click="isBranchOpen = !isBranchOpen"
@@ -164,8 +161,7 @@
                     </Transition>
                 </section>
 
-                <!-- BRANCH CONFIG -->
-                <section>
+                <section id="section-branch-config">
                     <button
                         class="w-full flex items-center justify-between p-5 text-left"
                         @click="isBranchConfigureOpen = !isBranchConfigureOpen"
@@ -193,8 +189,7 @@
                     </Transition>
                 </section>
 
-                <!-- AGENCY -->
-                <section>
+                <section id="section-agency">
                     <button
                         class="w-full flex items-center justify-between p-5 text-left"
                         @click="isAgencyOpen = !isAgencyOpen"
@@ -226,7 +221,7 @@
 
 <script setup lang="ts">
 import Dropdown from "../icons/dropdown.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { useSubscriptionCheckout } from "~/stores/subscription";
 import { planService } from "@/api/plan/PlanService";
 import BranchForm from "../forms/BranchForm.vue";
@@ -241,6 +236,62 @@ const isBillingOpen = ref(true);
 const isBranchOpen = ref(false);
 const isBranchConfigureOpen = ref(false);
 const isAgencyOpen = ref(false);
+
+const errorSectionMap: Record<string, { open: typeof isPlanOpen; id: string }> =
+    {
+        plan: { open: isPlanOpen, id: "section-plan" },
+        billing_interval: { open: isBillingOpen, id: "section-billing" },
+        branch_name: { open: isBranchOpen, id: "section-branch" },
+        branch_description: { open: isBranchOpen, id: "section-branch" },
+        branch_contact_number: { open: isBranchOpen, id: "section-branch" },
+        branch_image: { open: isBranchOpen, id: "section-branch" },
+        branch_lat: { open: isBranchOpen, id: "section-branch" },
+        branch_config: {
+            open: isBranchConfigureOpen,
+            id: "section-branch-config",
+        },
+        agency_name: { open: isAgencyOpen, id: "section-agency" },
+        agency_street: { open: isAgencyOpen, id: "section-agency" },
+        agency_city: { open: isAgencyOpen, id: "section-agency" },
+        agency_province: { open: isAgencyOpen, id: "section-agency" },
+        agency_country: { open: isAgencyOpen, id: "section-agency" },
+    };
+const sectionOrder = [
+    "section-plan",
+    "section-billing",
+    "section-branch",
+    "section-branch-config",
+    "section-agency",
+];
+
+watch(
+    () => checkout.errors,
+    async (errors) => {
+        if (!errors || Object.keys(errors).length === 0) return;
+
+        const firstErrorSection = sectionOrder.find((sectionId) =>
+            Object.keys(errors).some(
+                (key) => errorSectionMap[key]?.id === sectionId,
+            ),
+        );
+
+        if (!firstErrorSection) return;
+
+        Object.keys(errors).forEach((key) => {
+            if (errorSectionMap[key]) {
+                errorSectionMap[key].open.value = true;
+            }
+        });
+
+        await nextTick();
+
+        document.getElementById(firstErrorSection)?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    },
+    { deep: true },
+);
 
 const intervalOptions = [
     { value: "monthly", label: "Monthly", description: "Billed monthly" },

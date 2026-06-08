@@ -246,6 +246,7 @@ const send = async () => {
         });
     } catch (err: any) {
         const errors = err?.errors || err?.response?.data?.errors;
+        console.log(err);
         if (errors) {
             checkout.errors = Object.fromEntries(
                 Object.entries(errors).map(([key, value]: any) => [

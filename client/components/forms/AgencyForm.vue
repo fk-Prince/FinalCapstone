@@ -42,13 +42,89 @@
             <LabelInput
                 v-model="checkout.agency.name"
                 label="Agency Name"
+                required
                 :error="agencyNameError"
             />
             <LabelInput
                 v-model="checkout.agency.description"
                 label="Description"
             />
-            <LocationSelector @location-selected="handleLocation" />
+
+            <div class="flex gap-2 flex-col">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-semibold text-slate-700"
+                        >Location
+                        <p
+                            ref="locationErrorRef"
+                            v-if="locationError && useGeolocation"
+                            class="text-xs font-normal text-red-500"
+                        >
+                            {{ locationError }}
+                        </p></label
+                    >
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500">Use map</span>
+                        <button
+                            type="button"
+                            @click="useGeolocation = !useGeolocation"
+                            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+                            :class="
+                                useGeolocation ? 'bg-primary' : 'bg-slate-200'
+                            "
+                        >
+                            <span
+                                class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+                                :class="
+                                    useGeolocation
+                                        ? 'translate-x-4'
+                                        : 'translate-x-1'
+                                "
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                <template v-if="useGeolocation">
+                    <LocationSelector
+                        :initial-lat="checkout.agency.lat || undefined"
+                        :initial-lng="checkout.agency.lng || undefined"
+                        :initial-street="checkout.agency.street || undefined"
+                        :initial-city="checkout.agency.city || undefined"
+                        :initial-province="
+                            checkout.agency.province || undefined
+                        "
+                        :initial-country="checkout.agency.country || undefined"
+                        @location-selected="handleLocation"
+                    />
+                </template>
+
+                <div v-else class="grid grid-cols-1 gap-2">
+                    <LabelInput
+                        v-model="checkout.agency.street"
+                        label="Street"
+                        placeholder="e.g. 123 Roxas Avenue"
+                        :error="streetError"
+                    />
+                    <LabelInput
+                        v-model="checkout.agency.city"
+                        label="City"
+                        placeholder="e.g. Davao City"
+                        :error="cityError"
+                    />
+                    <LabelInput
+                        v-model="checkout.agency.province"
+                        label="Province"
+                        placeholder="e.g. Davao del sur"
+                        :error="provinceError"
+                    />
+                    <LabelInput
+                        v-model="checkout.agency.country"
+                        label="Country"
+                        placeholder="e.g. Philippines"
+                        :error="countryError"
+                    />
+                </div>
+            </div>
         </div>
 
         <div v-else class="space-y-4">
@@ -142,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import LabelInput from "../ui/BaseInput.vue";
 import LocationSelector from "../ui/LocationSelector.vue";
 import { useSubscriptionCheckout } from "~/stores/subscription";
@@ -151,18 +227,59 @@ import { agencyService } from "~/api/agency/AgencyService.js";
 const checkout = useSubscriptionCheckout();
 const mode = ref<"choice" | "new" | "existing">("choice");
 const selectedId = ref<number | null>(null);
+const useGeolocation = ref(true);
+const locationErrorRef = ref<HTMLElement | null>(null);
+
+const hasName = computed(() => !!checkout.agency.name);
+
+const hasLocation = computed(
+    () =>
+        checkout.agency.street &&
+        checkout.agency.city &&
+        checkout.agency.province &&
+        checkout.agency.country,
+);
 
 const agencyNameError = computed(() => {
-    const hasLocation =
-        checkout.agency.city ||
-        checkout.agency.province ||
-        checkout.agency.country;
-
-    if (hasLocation && !checkout.agency.name) {
+    if (hasLocation.value && !checkout.agency.name) {
         return "Agency name is required when a location is provided.";
     }
-
     return "";
+});
+
+const streetError = computed(() =>
+    hasName.value && !checkout.agency.street ? "Street is required." : "",
+);
+const cityError = computed(() =>
+    hasName.value && !checkout.agency.city ? "City is required." : "",
+);
+const provinceError = computed(() =>
+    hasName.value && !checkout.agency.province ? "Province is required." : "",
+);
+const countryError = computed(() =>
+    hasName.value && !checkout.agency.country ? "Country is required." : "",
+);
+
+const locationError = computed(() => {
+    const keys = [
+        "agency_street",
+        "agency_city",
+        "agency_province",
+        "agency_country",
+    ];
+    const found = keys.find((k) => checkout.errors?.[k]);
+    return found
+        ? "Location is required. Please pin your location on the map."
+        : "";
+});
+
+watch(locationError, async (val) => {
+    if (!val || !useGeolocation.value) return;
+    await nextTick();
+    locationErrorRef.value?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+    });
 });
 
 const formatAddress = (agency: any) => {
@@ -254,5 +371,10 @@ const handleLocation = ({
     checkout.agency.city = city;
     checkout.agency.province = province;
     checkout.agency.country = country;
+
+    delete checkout.errors?.agency_street;
+    delete checkout.errors?.agency_city;
+    delete checkout.errors?.agency_province;
+    delete checkout.errors?.agency_country;
 };
 </script>

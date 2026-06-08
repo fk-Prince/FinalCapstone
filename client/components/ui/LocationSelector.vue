@@ -12,6 +12,15 @@ interface Location {
     country: string;
 }
 
+const props = defineProps<{
+    initialLat?: number;
+    initialLng?: number;
+    initialStreet?: string;
+    initialCity?: string;
+    initialProvince?: string;
+    initialCountry?: string;
+}>();
+
 const emit = defineEmits<{
     (e: "location-selected", payload: Location): void;
 }>();
@@ -23,9 +32,6 @@ let marker: L_module.Marker | null = null;
 let userMarker: L_module.CircleMarker | null = null;
 let mapClickHandler: ((e: any) => void) | null = null;
 
-/**
- * CENTRALIZED LOCATION HANDLER
- */
 const handleLocation = async (lat: number, lng: number): Promise<void> => {
     selectedLocation.value = {
         lat,
@@ -41,9 +47,6 @@ const handleLocation = async (lat: number, lng: number): Promise<void> => {
     confirmLocation();
 };
 
-/**
- * REVERSE GEOCODING
- */
 const reverseGeocode = async (lat: number, lng: number): Promise<void> => {
     try {
         const config = useRuntimeConfig();
@@ -98,10 +101,8 @@ const reverseGeocode = async (lat: number, lng: number): Promise<void> => {
             "";
 
         const province = addr.state ?? addr.province ?? addr.region ?? "";
-
         const country = addr.country ?? "";
 
-        // Build label from address parts
         const labelParts = [
             addr.neighbourhood ?? addr.suburb ?? addr.hamlet ?? addr.village,
             street,
@@ -236,12 +237,47 @@ onMounted(async () => {
             "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     });
 
-    map = L.map("location-map").setView([7.0736, 125.611], 13);
+    const initialView =
+        props.initialLat && props.initialLng
+            ? [props.initialLat, props.initialLng]
+            : [7.0736, 125.611];
+
+    map = L.map("location-map").setView(initialView as [number, number], 13);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
     }).addTo(map);
+
+    if (props.initialLat && props.initialLng) {
+        placeMarker(props.initialLat, props.initialLng);
+
+        if (
+            props.initialStreet ||
+            props.initialCity ||
+            props.initialProvince ||
+            props.initialCountry
+        ) {
+            const labelParts = [
+                props.initialStreet,
+                props.initialCity,
+                props.initialProvince,
+                props.initialCountry,
+            ].filter(Boolean);
+
+            selectedLocation.value = {
+                lat: props.initialLat,
+                lng: props.initialLng,
+                label: labelParts.join(", "),
+                street: props.initialStreet ?? "",
+                city: props.initialCity ?? "",
+                province: props.initialProvince ?? "",
+                country: props.initialCountry ?? "",
+            };
+        } else {
+            await reverseGeocode(props.initialLat, props.initialLng);
+        }
+    }
 
     mapClickHandler = async (e: any) => {
         placeMarker(e.latlng.lat, e.latlng.lng);
@@ -251,9 +287,6 @@ onMounted(async () => {
     map?.on("click", mapClickHandler);
 });
 
-/**
- * CLEANUP
- */
 onUnmounted(() => {
     if (map && mapClickHandler) {
         map.off("click", mapClickHandler);
@@ -269,7 +302,6 @@ onUnmounted(() => {
     userMarker = null;
 });
 </script>
-
 <template>
     <div class="flex flex-col gap-2 w-full">
         <div

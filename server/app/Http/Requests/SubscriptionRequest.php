@@ -21,16 +21,16 @@ class SubscriptionRequest extends FormRequest
 
             'plan_code' => ['required', 'string'],
             'billing_interval' => ['required', 'string'],
-            'payment_method' => ['required', 'string'],
+            'payment_method' => ['nullable', 'string'],
 
             // Agency data
-            'agency_id' => ['nullable'],
-            'agency_name' => ['nullable', 'string'],
+            'agency_id'          => ['nullable'],
+            'agency_name'        => ['nullable', 'string', 'required_with:agency_street,agency_city,agency_province,agency_country'],
             'agency_description' => ['nullable', 'string'],
-            'agency_street' => ['nullable', 'string'],
-            'agency_city' => ['nullable', 'string'],
-            'agency_province' => ['nullable', 'string'],
-            'agency_country' => ['nullable', 'string'],
+            'agency_street'      => ['nullable', 'string', 'required_with:agency_name'],
+            'agency_city'        => ['nullable', 'string', 'required_with:agency_name'],
+            'agency_province'    => ['nullable', 'string', 'required_with:agency_name'],
+            'agency_country'     => ['nullable', 'string', 'required_with:agency_name'],
 
             // Branch data
             'branch_name' => ['required', 'string', 'unique:branches,name'],

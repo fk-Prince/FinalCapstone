@@ -1,40 +1,8 @@
-<script setup lang="ts">
-import { computed, useSlots } from "vue";
-
-defineOptions({ name: "BaseInput" });
-
-const props = defineProps({
-    modelValue: { type: [String, Number], default: "" },
-    label: String,
-    placeholder: String,
-    error: String,
-    mode: { type: String, default: "text" },
-    countryCode: { type: String, default: "" },
-    stateCode: { type: String, default: "" },
-});
-
-const emit = defineEmits(["update:modelValue"]);
-
-const value = computed({
-    get: () => props.modelValue,
-    set: (val) => emit("update:modelValue", val),
-});
-
-const slots = useSlots();
-const hasPrefix = computed(() => !!slots.prefix);
-const hasSuffix = computed(() => !!slots.suffix);
-
-const inputType = computed(() => {
-    if (props.mode === "password") return "password";
-    if (props.mode === "email") return "email";
-    return "text";
-});
-</script>
-
 <template>
     <div class="flex flex-col gap-1.5 font-primary">
         <label v-if="label" class="text-sm font-semibold text-slate-700">
             {{ label }}
+            <span v-if="required" class="text-red-500 ml-0.5">*</span>
         </label>
 
         <div
@@ -67,3 +35,37 @@ const inputType = computed(() => {
         <p v-if="error" class="text-xs text-red-500 mt-0.5">{{ error }}</p>
     </div>
 </template>
+
+<script setup lang="ts">
+import { computed, useSlots } from "vue";
+
+defineOptions({ name: "BaseInput" });
+
+const props = defineProps({
+    modelValue: { type: [String, Number], default: "" },
+    label: { type: String, required: true },
+    placeholder: String,
+    error: String,
+    required: { type: Boolean, default: false },
+    mode: { type: String, default: "text" },
+    countryCode: { type: String, default: "" },
+    stateCode: { type: String, default: "" },
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const value = computed({
+    get: () => props.modelValue,
+    set: (val) => emit("update:modelValue", val),
+});
+
+const slots = useSlots();
+const hasPrefix = computed(() => !!slots.prefix);
+const hasSuffix = computed(() => !!slots.suffix);
+
+const inputType = computed(() => {
+    if (props.mode === "password") return "password";
+    if (props.mode === "email") return "email";
+    return "text";
+});
+</script>
