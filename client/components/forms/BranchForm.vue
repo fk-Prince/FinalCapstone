@@ -13,6 +13,7 @@
                 <LabelInput
                     v-model="checkout.branch.description"
                     label="Description"
+                    required
                     @update:modelValue="clearError('branch_description')"
                     :error="checkout.errors?.branch_description"
                 />

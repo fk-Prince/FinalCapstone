@@ -3,9 +3,12 @@
         <div>
             <label
                 v-if="props.label"
-                class="text-sm font-semibold text-slate-700"
+                class="text-sm font-semibold gap-2 flex mb-1 text-slate-700"
             >
-                {{ props.label }}
+                {{ props.label
+                }}<span v-if="props.required" class="text-red-500 ml-0.5"
+                    >*</span
+                >
             </label>
             <button
                 type="button"
@@ -18,7 +21,7 @@
                         :src="selectedOption.icon"
                         class="w-5 object-cover"
                     />
-                    <span>{{ selectedOption.label }}</span>
+                    <span>{{ selectedOption.label }} </span>
                 </span>
 
                 <span v-else class="text-gray-400">
@@ -102,6 +105,7 @@ const props = defineProps<{
     label?: string;
     placeholder?: string;
     searchPlaceholder?: string;
+    required?: boolean;
 }>();
 
 const emit = defineEmits(["update:modelValue"]);

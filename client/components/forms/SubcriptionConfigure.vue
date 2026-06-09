@@ -9,7 +9,7 @@
         />
 
         <div class="flex flex-col">
-            <label class="text-sm font-semibold text-slate-700">
+            <label class="text-sm font-semibold mb-1 text-slate-700">
                 Business Hours
             </label>
 
@@ -17,6 +17,7 @@
                 <Combobox
                     v-model="opening"
                     :items="timeItems"
+                    required
                     placeholder="Opening time"
                     class="w-full"
                 />
@@ -24,6 +25,7 @@
                 <Combobox
                     v-model="closing"
                     :items="timeItems"
+                    required
                     placeholder="Closing time"
                     class="w-full"
                 />
@@ -51,7 +53,9 @@ import { Currency } from "~/utils/currency";
 import { generateAmPmTimes } from "~/utils/time";
 import LabelInput from "../ui/BaseInput.vue";
 
-const props = defineProps<{ setting: any }>();
+const props = defineProps<{
+    setting: any;
+}>();
 
 const times = generateAmPmTimes();
 const currencyList = Currency();

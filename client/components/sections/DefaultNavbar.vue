@@ -58,7 +58,7 @@
                                 >
                                     <div class="relative">
                                         <img
-                                            :src="avatarSrc"
+                                            :src="user?.avatar || avatarSrc"
                                             class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
                                             alt="Profile"
                                         />
@@ -90,7 +90,7 @@
                                     class="px-4 py-3 border-b border-gray-100 flex items-center gap-3"
                                 >
                                     <img
-                                        :src="avatarSrc"
+                                        :src="user?.avatar || avatarSrc"
                                         class="w-10 h-10 rounded-full border object-cover"
                                         alt="Profile"
                                     />
@@ -174,7 +174,7 @@
                 :logo="logoAmuma"
                 :navItems="navItems"
                 :user="user"
-                :avatarSrc="avatarSrc"
+                :avatarSrc="user?.avatar || avatarSrc"
                 @close="mobileMenuOpen = false"
                 @logout="
                     () => {
