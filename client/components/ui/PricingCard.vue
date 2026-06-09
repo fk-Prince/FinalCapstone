@@ -7,7 +7,6 @@
                 : 'bg-white text-secondary shadow-sm border border-muted-light p-8',
         ]"
     >
-        <!-- Most Popular Badge -->
         <div
             v-if="featured"
             class="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
@@ -60,12 +59,14 @@
                     'text-sm font-medium',
                     featured ? 'text-white/60' : 'text-muted',
                 ]"
-                >{{ annual ? "/ year" : "/ month" }}</span
             >
+                {{ billingInterval === "yearly" ? "/ year" : "/ month" }}
+            </span>
         </div>
 
         <NuxtLink
             to="/pricing/subscription-details"
+            @click.prevent="$emit('select', $props)"
             :class="[
                 'w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 mb-6',
                 featured
@@ -124,10 +125,14 @@ defineProps<{
     planLabel: string;
     title: string;
     description: string;
-    annual: boolean;
+    billingInterval: "monthly" | "yearly";
     price: number | undefined;
     ctaText: string;
     features: string[];
     featured?: boolean;
+}>();
+
+defineEmits<{
+    (e: "select", plan: any): void;
 }>();
 </script>

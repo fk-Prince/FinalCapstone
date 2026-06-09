@@ -28,12 +28,12 @@
                     </NuxtLink>
                 </div>
 
-                <div class="flex justify-end items-center gap-4">
+                <div
+                    class="flex justify-end items-center gap-4"
+                    v-if="variant === 'full'"
+                >
                     <template v-if="!user">
-                        <div
-                            v-if="variant === 'full'"
-                            class="hidden md:flex items-center gap-2"
-                        >
+                        <div class="hidden md:flex items-center gap-2">
                             <NuxtLink
                                 to="/auth/signin"
                                 class="px-7 py-2 text-black uppercase bg-primary border rounded-sm"
@@ -149,7 +149,7 @@
                     </template>
 
                     <button
-                        @click="mobileMenuOpen = true"
+                        @click="mobileMenuOpen = !mobileMenuOpen"
                         class="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
                         aria-label="Open menu"
                     >
