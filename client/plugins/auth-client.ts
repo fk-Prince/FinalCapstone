@@ -18,7 +18,7 @@ export default defineNuxtPlugin(async () => {
     try {
         const res = await authService.me();
         user.value = res;
-    } catch {
+    } catch (err) {
         resetAuth();
     } finally {
         ready.value = true;

@@ -4,9 +4,11 @@ namespace App\Service;
 
 use App\Repository\UserRepository;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthService
@@ -96,27 +98,33 @@ class AuthService
         $driver = Socialite::driver('google');
         $googleUser = $driver->stateless()->user();
 
-        $existingUser = $this->userRepository->findByField('email', $googleUser->getEmail());
+        $user = $this->userRepository->findByField('email', $googleUser->getEmail());
         $clientUrl = config('app.client_url');
 
-        if ($existingUser && $existingUser->provider !== 'google') {
-            return redirect("{$clientUrl}/auth/signin?error=email_exists");
+        if (!$user) {
+            $user = User::create([
+                'first_name' => explode(' ', $googleUser->getName())[0],
+                'last_name'  => explode(' ', $googleUser->getName())[1] ?? '',
+                'email'      => $googleUser->getEmail(),
+                'uuid'       => $googleUser->getId(),
+                'avatar'     => $googleUser->getAvatar(),
+                'provider'   => 'google',
+            ]);
         }
 
-        $user = User::updateOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'first_name'      => explode(' ', $googleUser->getName())[0],
-                'last_name'       => explode(' ', $googleUser->getName())[1] ?? '',
-                'uuid'            => $googleUser->getId(),
-                'avatar'          => $googleUser->getAvatar(),
-                'provider'        => 'google',
-            ]
+        if ($user->provider !== 'google') {
+            $user->update([
+                'provider' => 'google',
+                'uuid'     => $googleUser->getId(),
+                'avatar'   => $googleUser->getAvatar(),
+            ]);
+        }
 
-        );
-        // Auth::login($user);
 
         $token = $user->createToken('auth-token')->plainTextToken;
-        return redirect("{$clientUrl}/auth/success?token={$token}");
+        $clientUrl = config('app.client_url');
+        $redirectUrl = $clientUrl . '/auth/success?token=' . urlencode($token);
+
+        return redirect()->away($redirectUrl);
     }
 }
