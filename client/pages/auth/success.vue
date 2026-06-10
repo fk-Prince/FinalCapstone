@@ -7,12 +7,6 @@ const ready = useAuthReady();
 
 onMounted(async () => {
     const token = route.query.token as string;
-    const err = route.query.error as string;
-
-    if (err === "email_exists") {
-        navigateTo("/auth/signin?error=email_exists");
-        return;
-    }
 
     if (!token) {
         navigateTo("/auth/signin");
@@ -36,7 +30,7 @@ onMounted(async () => {
 <template>
     <div class="min-h-screen flex flex-col items-center justify-center gap-4">
         <svg
-            class="w-10 h-10 animate-spin text-blue-600"
+            class="w-10 h-10 animate-spin text-primary"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

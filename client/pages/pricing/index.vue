@@ -17,7 +17,7 @@
             </div>
 
             <div class="flex justify-center mb-12">
-                <BillingToggle v-model:annual="annual" />
+                <BillingToggle v-model="billingCycle" />
             </div>
 
             <div v-if="loading" class="flex justify-center py-20">
@@ -34,16 +34,18 @@
                     v-for="plan in formattedPlans"
                     :key="plan.title"
                     v-bind="plan"
-                    :annual="annual"
+                    :billingInterval="billingCycle"
+                    @select="checkout.setSelectedPlan(plan)"
                 />
             </div>
+
             <ComparableTable />
         </main>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import BillingToggle from "~/components/ui/BillingToggle.vue";
 import PricingCard from "~/components/ui/PricingCard.vue";
 import { planService } from "@/api/plan/PlanService";
@@ -51,14 +53,20 @@ import ComparableTable from "~/components/ui/ComparableTable.vue";
 import { useSubscriptionCheckout } from "~/stores/subscription";
 
 useHead({ title: "Pricing" });
+
 definePageMeta({
     navVariant: "full",
     navHeaderClass: "w-full h-[90px] bg-white z-[9999] border-b border-muted",
 });
 
-const annual = ref(false);
+const billingCycle = ref<"monthly" | "yearly">("monthly");
 const loading = ref(true);
 const checkout = useSubscriptionCheckout();
+checkout.selectedInterval = billingCycle.value;
+
+watch(billingCycle, (val) => {
+    checkout.selectedInterval = val;
+});
 
 onMounted(async () => {
     try {
@@ -74,12 +82,14 @@ const PLAN_LABELS = ["Plan A", "Plan B", "Plan C"];
 const formattedPlans = computed(() =>
     checkout.plans.map((plan: any, index: number) => ({
         planLabel: PLAN_LABELS[index] ?? `Plan ${index + 1}`,
+        ...plan,
         title: plan.name,
         description: plan.description,
-        price: annual.value
-            ? (plan.yearly_price?.price ?? plan.monthly_price?.price)
-            : plan.monthly_price?.price,
-        annual: annual,
+        price:
+            billingCycle.value === "yearly"
+                ? plan.yearly_price?.price
+                : plan.monthly_price?.price,
+        billing_interval: billingCycle.value,
         ctaText: `Subscribe to ${plan.name}`,
         featured: index === checkout.plans.length - 1,
         features: plan.name.includes("Home")

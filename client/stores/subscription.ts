@@ -1,5 +1,6 @@
+
 import { defineStore } from "pinia";
-import { type SubscriptionRequest } from '~/api/subscription/SubscriptionService';
+import { type SubscriptionRequest } from "~/api/subscription/SubscriptionService";
 
 export interface Subscription {
     plans: any[];
@@ -13,40 +14,110 @@ export interface Subscription {
     settings?: any;
 }
 
-export const useSubscriptionCheckout = defineStore(
-    "subscriptionCheckout",
-    {
-        state: (): Subscription => ({
-            plans: [] as any[],
-            selectedPlan: null as any,
-            selectedInterval: "",
-            payment_method: "CREDIT-CARD",
-            branch: {
+export const useSubscriptionCheckout = defineStore("subscriptionCheckout", {
+    state: (): Subscription => ({
+        plans: [],
+        selectedPlan: null,
+        selectedInterval: "",
+        payment_method: "CREDIT-CARD",
+        branch: {
+            name: "",
+            contact_number: "",
+            image: null,
+            street: "",
+            description: "",
+            city: "",
+            province: "",
+            country: "",
+            lat: 0,
+            lng: 0,
+        } as Branch,
+        agency: {
+            id: null as number | null | undefined,
+            name: "",
+            description: "",
+            street: "",
+            city: "",
+            province: "",
+            country: "",
+            lat: 0,
+            lng: 0
+        } as Agency,
+        settings: {
+            opening: "12:00 AM",
+            closing: "12:00 AM",
+            currency: "PHP",
+        },
+        errors: {},
+        subscriptionPayload: null,
+    }),
+
+    getters: {
+        selectedPrice: (state) => {
+            if (!state.selectedPlan) return null;
+
+            return state.selectedInterval === "yearly"
+                ? state.selectedPlan.yearly_price?.price
+                : state.selectedPlan.monthly_price?.price;
+        },
+    },
+
+    actions: {
+        setPlans(plans: any[]) {
+            this.plans = plans;
+            if (plans.length > 0 && !this.selectedPlan) {
+                this.selectedPlan = plans[0];
+            }
+        },
+
+        setSelectedPlan(plan: any) {
+            this.selectedPlan = plan;
+        },
+
+        setErrors(errors: Record<string, string>) {
+            this.errors = errors;
+        },
+
+        clearError(field: string) {
+            delete this.errors[field];
+        },
+
+        clearAgency() {
+            this.agency = {
+                id: undefined,
+                name: "",
+                description: "",
+                street: "",
+                city: "",
+                province: "",
+                country: "",
+                lat: 0,
+                lng: 0,
+            } as Agency;
+        },
+
+        clearAllErrors() {
+            this.errors = {};
+        },
+
+        reset() {
+            this.selectedPlan = null;
+            this.selectedInterval = "";
+            this.branch = {
                 name: "",
                 contact_number: "",
-                image: null as File | null,
+                image: null,
                 street: "",
                 description: "",
                 city: "",
                 province: "",
                 country: "",
                 lat: 0,
-                lng: 0
-            } as Branch,
-            // branch: {
-            //     name: "AMUMA",
-            //     contact_number: "09771171913",
-            //     image: null as File | null,
-            //     street: "Roxas Avenue",
-            //     description: "Homecare Facility",
-            //     city: "Davao City",
-            //     province: "Davao del Sur",
-            //     country: "PH",
-            //     lat: 0,
-            //     lng: 0
-            // } as Branch,
-            agency: {
-                id: null as number | null | undefined,
+                lng: 0,
+            } as Branch;
+
+            this.agency = {
+                id: undefined,
                 name: "",
                 description: "",
                 street: "",
@@ -54,98 +125,17 @@ export const useSubscriptionCheckout = defineStore(
                 province: "",
                 country: "",
                 lat: 0,
-                lng: 0
-            } as Agency,
-            settings: {
+                lng: 0,
+            } as Agency;
+
+            this.settings = {
                 opening: "12:00 AM",
                 closing: "12:00 AM",
                 currency: "PHP",
-                // additional_payment: "0.00",
-            },
-            errors: {},
-            subscriptionPayload: null as SubscriptionRequest | null,
-        }),
+            };
 
-
-        getters: {
-            selectedPrice: (state) => {
-                if (!state.selectedPlan) return null;
-
-                return state.selectedInterval === "yearly"
-                    ? state.selectedPlan.yearly_price?.price
-                    : state.selectedPlan.monthly_price?.price;
-            },
+            this.errors = {};
+            this.subscriptionPayload = null;
         },
-
-        actions: {
-            setPlans(plans: any[]) {
-                this.plans = plans;
-                if (plans.length > 0 && !this.selectedPlan) {
-                    this.selectedPlan = plans[0];
-                }
-            },
-
-            setErrors(errors: Record<string, string>) {
-                this.errors = errors;
-            },
-
-            clearError(field: string) {
-                delete this.errors[field];
-            },
-
-            clearAgency() {
-                this.agency = {
-                    id: undefined,
-                    name: "",
-                    description: "",
-                    street: "",
-                    city: "",
-                    province: "",
-                    country: "",
-                    lat: 0,
-                    lng: 0
-                };
-            },
-
-            clearAllErrors() {
-                this.errors = {};
-            },
-
-            reset() {
-                this.selectedPlan = null;
-                this.selectedInterval = "";
-                this.branch = {
-                    name: "",
-                    contact_number: "",
-                    image: null,
-                    street: "",
-                    description: "",
-                    city: "",
-                    province: "",
-                    country: "",
-                    lat: 0,
-                    lng: 0,
-                } as Branch;
-                this.agency = {
-                    id: undefined,
-                    name: "",
-                    description: "",
-                    street: "",
-                    city: "",
-                    province: "",
-                    country: "",
-                    lat: 0,
-                    lng: 0,
-                } as Agency;
-                this.settings = {
-                    opening: "12:00 AM",
-                    closing: "12:00 AM",
-                    currency: "PHP",
-                };
-                this.errors = {};
-                this.subscriptionPayload = null;
-            },
-
-        },
-    }
-);
+    },
+});

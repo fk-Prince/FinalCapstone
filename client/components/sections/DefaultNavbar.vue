@@ -28,12 +28,12 @@
                     </NuxtLink>
                 </div>
 
-                <div class="flex justify-end items-center gap-4">
+                <div
+                    class="flex justify-end items-center gap-4"
+                    v-if="variant === 'full'"
+                >
                     <template v-if="!user">
-                        <div
-                            v-if="variant === 'full'"
-                            class="hidden md:flex items-center gap-2"
-                        >
+                        <div class="hidden md:flex items-center gap-2">
                             <NuxtLink
                                 to="/auth/signin"
                                 class="px-7 py-2 text-black uppercase bg-primary border rounded-sm"
@@ -58,7 +58,7 @@
                                 >
                                     <div class="relative">
                                         <img
-                                            :src="avatarSrc"
+                                            :src="user?.avatar || avatarSrc"
                                             class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
                                             alt="Profile"
                                         />
@@ -90,7 +90,7 @@
                                     class="px-4 py-3 border-b border-gray-100 flex items-center gap-3"
                                 >
                                     <img
-                                        :src="avatarSrc"
+                                        :src="user?.avatar || avatarSrc"
                                         class="w-10 h-10 rounded-full border object-cover"
                                         alt="Profile"
                                     />
@@ -159,7 +159,7 @@
                     </template>
 
                     <button
-                        @click="mobileMenuOpen = true"
+                        @click="mobileMenuOpen = !mobileMenuOpen"
                         class="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
                         aria-label="Open menu"
                     >
@@ -184,7 +184,7 @@
                 :logo="logoAmuma"
                 :navItems="navItems"
                 :user="user"
-                :avatarSrc="avatarSrc"
+                :avatarSrc="user?.avatar || avatarSrc"
                 @close="mobileMenuOpen = false"
                 @logout="
                     () => {

@@ -21,8 +21,7 @@
                         <h2 class="font-semibold text-lg text-gray-900">
                             Subscription Plan
                             <p class="text-sm text-slate-500 font-normal">
-                                Manage your current plan, billing cycle, and
-                                upgrade options.
+                                Manage your current AMUMA plan.
                             </p>
                         </h2>
                         <div class="flex items-center gap-2">

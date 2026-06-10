@@ -57,7 +57,7 @@ import signinLogo from "~/assets/logo/signinLogo.png";
                     </p>
                 </div>
 
-                <ul class="space-y-4">
+                <ul class="space-y-4 pt-7">
                     <li class="flex items-start gap-3.5">
                         <div
                             class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10"

@@ -31,7 +31,8 @@ class User extends Authenticatable
         'provider',
         'is_verified',
         'is_active',
-        'uuid'
+        'uuid',
+        'avatar'
     ];
 
     /**

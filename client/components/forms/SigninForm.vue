@@ -2,15 +2,14 @@
 import { ref } from "vue";
 import BaseInput from "../ui/BaseInput.vue";
 import BaseButton from "../ui/BaseButton.vue";
+import AlertMessage from "../ui/AlertMessage.vue";
+
 import { useAuthUser } from "~/composables/useAuthUser";
 import { authService } from "~/api/auth/AuthService";
-import { useToast } from "~/composables/useToast";
-
-defineOptions({ name: "SignInForm" });
 
 const route = useRoute();
 const user = useAuthUser();
-const { success, error } = useToast();
+const redirecting = ref(false);
 
 const signinData = ref<SigninRequest>({
     email: "prince.sestoso@gmail.com",
@@ -25,23 +24,44 @@ const errors = ref({
     password: "",
 });
 
-async function handleSignIn() {
-    errors.value = { email: "", password: "" };
+const alert = ref<Alert>({
+    show: false,
+    type: "info",
+    message: "",
+});
 
-    if (!signinData.value.email) errors.value.email = "Email is required.";
-    if (!signinData.value.password)
-        errors.value.password = "Password is required.";
-    if (errors.value.email || errors.value.password) return;
+async function handleSignIn() {
+    errors.value = {
+        email: "",
+        password: "",
+    };
+
+    alert.value.show = false;
+
+    if (!signinData.value.email || !signinData.value.password) {
+        showAlert(alert, "error", "Invalid credentials", 0);
+        return;
+    }
 
     loading.value = true;
+
     try {
         const res = await authService.login(signinData.value);
-        user.value = res.user;
         localStorage.setItem("auth", res.token);
-        success(res.message);
-        await navigateTo((route.query.redirect as string) || "/");
+        showAlert(alert, "success", res.message);
+        redirecting.value = true;
+        setTimeout(async () => {
+            loading.value = true;
+            user.value = res.user;
+            await navigateTo((route.query.redirect as string) || "/");
+        }, 1500);
     } catch (err: any) {
-        error(err?.message);
+        showAlert(
+            alert,
+            "error",
+            err?.message || "Invalid email or password.",
+            0,
+        );
     } finally {
         loading.value = false;
     }
@@ -49,44 +69,22 @@ async function handleSignIn() {
 
 async function googleUrl() {
     loading.value = true;
+
     try {
         const res = await authService.googleUrl();
         window.location.href = res.url;
     } catch (err: any) {
-        error(err?.message);
+        showAlert(
+            alert,
+            "error",
+            err?.message || "Invalid email or password.",
+            0,
+        );
     } finally {
         loading.value = false;
     }
 }
-// async function googleUrl() {
-//     loading.value = true;
-//     try {
-//         const res = await authService.googleUrl();
-
-//         const popup = window.open(
-//             res.url,
-//             "Google Sign In",
-//             "width=500,height=600,scrollbars=yes,resizable=yes",
-//         );
-
-//         const handler = (event: MessageEvent) => {
-//             if (event.origin !== window.location.origin) return;
-//             const { token } = event.data;
-//             if (!token) return;
-//             window.removeEventListener("message", handler);
-//             popup?.close();
-//             localStorage.setItem("auth", token);
-//             navigateTo((route.query.redirect as string) || "/");
-//         };
-//         window.addEventListener("message", handler);
-//     } catch (err: any) {
-//         error(err?.message);
-//     } finally {
-//         loading.value = false;
-//     }
-// }
 </script>
-
 <template>
     <div
         class="bg-white rounded-2xl shadow-xl px-10 py-11 w-full max-w-[460px]"
@@ -97,12 +95,20 @@ async function googleUrl() {
             >
                 Welcome back
             </h2>
+
             <p class="text-sm text-slate-500 mt-1">
                 Sign in to your
                 <span class="text-blue-600 font-semibold">AMUMA</span>
                 account
             </p>
         </div>
+
+        <AlertMessage
+            v-if="alert.show"
+            :type="alert.type"
+            :message="alert.message"
+            class="mb-5"
+        />
 
         <div class="flex flex-col gap-5">
             <BaseInput
@@ -206,6 +212,7 @@ async function googleUrl() {
                 size="lg"
                 :full="true"
                 :loading="loading"
+                :disabled="loading || redirecting"
                 @click="handleSignIn"
                 class="mt-5"
             >
@@ -235,6 +242,7 @@ async function googleUrl() {
                 @click="googleUrl()"
                 variant="secondary"
                 size="lg"
+                :disabled="loading || redirecting"
                 :full="true"
             >
                 <img
