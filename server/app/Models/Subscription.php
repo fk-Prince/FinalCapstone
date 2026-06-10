@@ -18,7 +18,7 @@ class Subscription extends Model
      */
     public function uniqueIds()
     {
-        return ['subscription_uuid'];
+        return ['uuid'];
     }
     protected $fillable = [
         'plan_id',

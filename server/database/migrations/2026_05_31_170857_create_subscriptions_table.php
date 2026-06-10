@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id('subscription_id');
-            $table->string('subscription_uuid')->unique();
+            $table->uuid('uuid')->unique();
             $table->foreignId('plan_id')->constrained('plans', 'plan_id');
             $table->foreignId('branch_id')->constrained('branches', 'branch_id');
             $table->enum('billing_interval', ['YEARLY', 'MONTHLY']);

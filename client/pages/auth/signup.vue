@@ -5,6 +5,7 @@ definePageMeta({
     navVariant: "logo",
     navHeaderClass:
         "fixed top-0 left-0 w-full h-[90px] bg-transparent z-[9999]",
+    footer: false,
 });
 useHead({
     title: "Sign Up - AMUMA",

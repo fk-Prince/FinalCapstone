@@ -2,7 +2,7 @@
     <ClientOnly>
         <header :class="header">
             <nav
-                class="mx-auto grid h-full w-full grid-cols-2 md:grid-cols-3 items-center px-6"
+                class="mx-auto h-full w-full flex justify-between items-center px-6"
             >
                 <div class="flex justify-start">
                     <NuxtLink to="/" class="flex items-center">
@@ -115,6 +115,16 @@
                                         @click="
                                             () => {
                                                 navigateTo('/profile');
+                                                close();
+                                            }
+                                        "
+                                    />
+                                    <DropdownItem
+                                        icon="user"
+                                        label="Dashboard"
+                                        @click="
+                                            () => {
+                                                navigateTo('/dashboard');
                                                 close();
                                             }
                                         "
