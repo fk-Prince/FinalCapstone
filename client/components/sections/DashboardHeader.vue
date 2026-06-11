@@ -28,6 +28,7 @@
                     </div>
                 </div>
                 <div v-else class="flex items-center gap-3">
+                    <Notification />
                     <NavbarProfileDropdown v-if="user" :user="user" />
                 </div>
             </div>
@@ -55,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import Notification from "../ui/Notification.vue";
 import logoAmuma from "~/assets/logo/logoAmuma.png";
 import { useAuthUser } from "~/composables/useAuthUser";
 import NavbarProfileDropdown from "../ui/NavbarProfileDropdown.vue";
