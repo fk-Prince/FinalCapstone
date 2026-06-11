@@ -1,69 +1,85 @@
 <template>
     <header
-        class="h-24 bg-white border-b border-gray-200 flex items-center justify-between px-8"
+        class="h-[90px] w-full bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0"
     >
-        <h1 class="text-4xl font-bold text-primary">
-            {{ title }}
-        </h1>
-
-        <div class="flex items-center gap-6">
-            <button class="relative text-gray-600">
-                <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 10h8m-8 4h5m7 5l-3-3H6a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2h-1z"
-                    />
-                </svg>
-            </button>
-
-            <button class="relative">
-                <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                </svg>
-
-                <span
-                    class="absolute -top-1 -right-1 w-2 h-2 bg-danger rounded-full"
+        <div class="flex justify-start">
+            <NuxtLink to="/" class="flex items-center">
+                <img
+                    :src="logoAmuma"
+                    alt="AMUMA logo"
+                    class="w-[170px] md:w-[250px] object-contain"
                 />
+            </NuxtLink>
+        </div>
+
+        <div class="flex gap-2 items-center">
+            <div class="flex items-center gap-3">
+                <div v-if="!hydrated" class="flex items-center gap-3">
+                    <div
+                        class="w-9 h-9 bg-gray-200 rounded-full animate-pulse"
+                    />
+                    <div class="flex flex-col gap-2">
+                        <div
+                            class="w-24 h-3 bg-gray-200 rounded animate-pulse"
+                        />
+                        <div
+                            class="w-14 h-3 bg-gray-200 rounded animate-pulse"
+                        />
+                    </div>
+                </div>
+                <div v-else class="flex items-center gap-3">
+                    <NavbarProfileDropdown v-if="user" :user="user" />
+                </div>
+            </div>
+
+            <button
+                @click="$emit('open')"
+                class="flex md:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Open menu"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="w-6 h-6"
+                >
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
             </button>
-
-            <BaseDropdownMenu align="right">
-                <template #trigger="{ toggle }">
-                    <button
-                        @click="toggle"
-                        class="w-12 h-12 rounded-full bg-blue-100 text-primary font-semibold"
-                    >
-                        A
-                    </button>
-                </template>
-
-                <template #default>
-                    <div class="p-4">Profile Menu</div>
-                </template>
-            </BaseDropdownMenu>
         </div>
     </header>
 </template>
 
 <script setup lang="ts">
-import BaseDropdownMenu from "../ui/BaseDropdownMenu.vue";
-defineProps<{
-    title: string;
+import logoAmuma from "~/assets/logo/logoAmuma.png";
+import { useAuthUser } from "~/composables/useAuthUser";
+import NavbarProfileDropdown from "../ui/NavbarProfileDropdown.vue";
+import { ref, onMounted } from "vue";
+
+const user = useAuthUser();
+const hydrated = ref(false);
+
+onMounted(() => {
+    hydrated.value = true;
+});
+
+const props = withDefaults(
+    defineProps<{ navItems?: { label: string; to: string }[] }>(),
+    {
+        navItems: () => [
+            { label: "Pricing", to: "/" },
+            { label: "Booking", to: "/" },
+            { label: "Docs", to: "/" },
+            { label: "Company", to: "/" },
+        ],
+    },
+);
+
+defineEmits<{
+    open: [];
 }>();
 </script>

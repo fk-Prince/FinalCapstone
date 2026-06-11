@@ -1,17 +1,17 @@
 ﻿<template>
-    <div class="min-h-screen flex flex-col bg-[#EEF3FB]">
-        <DashboardSidebar
-            :open="true"
-            :logo="logoAmuma"
-            :navItems="navItems"
-            :user="user"
-            :avatarSrc="avatar"
-            @close="isOpen = false"
-            @logout="handleLogout"
-        />
+    <div class="h-screen flex flex-col bg-[#EEF3FB]">
+        <DashboardHeader @open="isOpen = true" />
 
-        <div class="flex-1 flex flex-col min-w-0">
-            <DefaultNavbar />
+        <div class="flex flex-1 min-h-0">
+            <DynamicSidebar
+                :open="isOpen"
+                :logo="logoAmuma"
+                :navItems="navItems"
+                :user="user"
+                :avatarSrc="avatar"
+                @close="isOpen = false"
+                :variant="2"
+            />
 
             <main class="flex-1 p-6 overflow-auto">
                 <slot />
@@ -19,33 +19,23 @@
         </div>
     </div>
 </template>
-
 <script setup lang="ts">
-import DefaultNavbar from "~/components/sections/DefaultNavbar.vue";
-import DashboardSidebar from "~/components/sections/DashboardSidebar.vue";
 import logoAmuma from "~/assets/logo/logoAmuma.png";
-
+import DynamicSidebar from "~/components/sections/DynamicSidebar.vue";
 import { ref } from "vue";
 import { useAuthUser } from "~/composables/useAuthUser";
 import { userInitials, avatarSrc } from "~/utils/user";
+import DashboardHeader from "~/components/sections/DashboardHeader.vue";
 
 const user = useAuthUser();
-
-const isOpen = ref(true);
+const isOpen = ref(false);
 
 const navItems = [
-    { label: "Pricing", to: "/pricing" },
-    { label: "Booking", to: "/booking" },
-    { label: "Docs", to: "/docs" },
-    { label: "Company", to: "/company" },
+    { label: "Branches", to: "/app/branches" },
+    { label: "Booking", to: "/" },
+    { label: "Docs", to: "/" },
+    { label: "Company", to: "/" },
 ];
-
-const logout = () => {};
-
-const handleLogout = () => {
-    logout();
-    isOpen.value = false;
-};
 
 const initials = userInitials(user);
 const avatar = avatarSrc(initials);

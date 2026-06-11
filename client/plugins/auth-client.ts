@@ -6,9 +6,11 @@ export default defineNuxtPlugin(async () => {
     const ready = useAuthReady();
 
     if (import.meta.server) {
-        ready.value = true;
         return;
     }
+
+    ready.value = false;
+
     const hasSession = localStorage.getItem("auth");
     if (!hasSession) {
         ready.value = true;
