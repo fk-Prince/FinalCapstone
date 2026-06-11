@@ -242,7 +242,10 @@ onMounted(async () => {
             ? [props.initialLat, props.initialLng]
             : [7.0736, 125.611];
 
-    map = L.map("location-map").setView(initialView as [number, number], 13);
+    map = L.map("location-map", { attributionControl: false }).setView(
+        initialView as [number, number],
+        13,
+    );
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,

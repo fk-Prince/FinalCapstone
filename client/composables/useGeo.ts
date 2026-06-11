@@ -20,7 +20,7 @@ interface Country {
 
 let cache: Country[] | null = null;
 
-// Lazy loader (prevents full bundle load on startup)
+
 async function loadGeoData(): Promise<Country[]> {
     if (cache) return cache;
 
