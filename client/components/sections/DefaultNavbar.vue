@@ -87,7 +87,7 @@ const props = withDefaults(
     defineProps<{ navItems?: { label: string; to: string }[] }>(),
     {
         navItems: () => [
-            { label: "Pricing", to: "/" },
+            { label: "Pricing", to: "/pricing" },
             { label: "Booking", to: "/" },
             { label: "Docs", to: "/" },
             { label: "Company", to: "/" },
